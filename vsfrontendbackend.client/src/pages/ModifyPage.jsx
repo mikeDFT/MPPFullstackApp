@@ -3,7 +3,7 @@ import { ModifyDetails } from "@/components/ModifyDetails.jsx";
 import {useLocation} from "react-router-dom";
 import { useGameData } from "@/context/GameDataContext";
 import { apiService } from "@/services/apiService.js";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 function ModifyPage() {
 	const { iconsIDToObjs, gamesInfo } = useGameData();
@@ -14,38 +14,39 @@ function ModifyPage() {
 
 	var gameID = location.state?.gameID || null;
 
-	useEffect(() => {
-		async function fetchGameData() {
+	// Memoize the fetch function to prevent unnecessary re-renders
+	const fetchGameData = useCallback(async () => {
+		try {
+			setIsLoading(true);
+			setError(null);
+
+			// Try to get data from API first
 			try {
-				setIsLoading(true);
-				setError(null);
-
-				// Try to get data from API first
-				try {
-					const data = await apiService.getGame(gameID);
-					setGameData(data);
+				const data = await apiService.getGame(gameID);
+				setGameData(data);
+				return;
+			} catch (apiError) {
+				console.log("API request failed, trying to get data from context");
+				
+				// If API fails, try to get data from context
+				const gameFromContext = gamesInfo.find(game => game.Id === gameID);
+				if (gameFromContext) {
+					setGameData(gameFromContext);
 					return;
-				} catch (apiError) {
-					console.log("API request failed, trying to get data from context");
-					
-					// If API fails, try to get data from context
-					const gameFromContext = gamesInfo.find(game => game.Id === gameID);
-					if (gameFromContext) {
-						setGameData(gameFromContext);
-						return;
-					}
-					
-					// If not found in context either, throw error
-					throw new Error("Game not found in context");
 				}
-			} catch (error) {
-				console.error("Error fetching game data:", error);
-				setError(error.message);
-			} finally {
-				setIsLoading(false);
+				
+				// If not found in context either, throw error
+				throw new Error("Game not found in context");
 			}
+		} catch (error) {
+			console.error("Error fetching game data:", error);
+			setError(error.message);
+		} finally {
+			setIsLoading(false);
 		}
+	}, [gameID]);
 
+	useEffect(() => {
 		if (gameID != null) {
 			fetchGameData();
 		} else {
@@ -62,7 +63,7 @@ function ModifyPage() {
 			});
 			setIsLoading(false);
 		}
-	}, [gameID, gamesInfo]); // Add gamesInfo to dependencies
+	}, [gameID, fetchGameData]); // Only depend on gameID and the memoized fetch function
 
 	if (isLoading) {
 		return <div>Loading...</div>;

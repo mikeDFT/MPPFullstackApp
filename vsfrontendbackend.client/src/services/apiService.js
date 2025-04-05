@@ -11,9 +11,9 @@ env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:729
 let isServerUp = true;
 let serverStatusListeners = new Set();
 
-function resetLocalStorageQueue() {
-    localStorage.setItem('requestQueue', [])
-}
+//function resetLocalStorageQueue() {
+//    localStorage.setItem('requestQueue', [])
+//}
 // resetLocalStorageQueue();
 
 // Request queue system
@@ -96,14 +96,6 @@ const requestQueue = {
 // Load queue on startup
 requestQueue.loadQueue();
 
-export const serverStatus = {
-    isUp: () => isServerUp,
-    subscribe: (listener) => {
-        serverStatusListeners.add(listener);
-        return () => serverStatusListeners.delete(listener);
-    }
-};
-
 // Helper function to check if we can make requests
 const canMakeRequest = () => {
     return isServerUp && getOnLineStatus();
@@ -132,6 +124,14 @@ async function handleResponse(response) {
         return { success: true, status: response.status };
     }
 }
+
+export const serverStatus = {
+    isUp: () => isServerUp,
+    subscribe: (listener) => {
+        serverStatusListeners.add(listener);
+        return () => serverStatusListeners.delete(listener);
+    }
+};
 
 // Add server status check function
 export const checkServerStatus = async () => {

@@ -2,73 +2,79 @@ using Microsoft.AspNetCore.Mvc;
 using VSFrontendBackend.Server.Services;
 using VSFrontendBackend.Server.Models;
 using System.Diagnostics;
+using System.Threading;
 
-namespace backend.Server.Controllers;
- 
-[ApiController]
-//[Route("[controller]")]
-[Route("game")]
-public class GameController : ControllerBase
+namespace backend.Server.Controllers
 {
-    private readonly IGameService _gameService;
-
-    public GameController(ILogger<GameController> logger)
+    [ApiController]
+    //[Route("[controller]")]
+    [Route("game")]
+    public class GameController : ControllerBase
     {
-        _gameService = new GameService();
+        private readonly IGameService _gameService;
+        private static int _instanceCount = 0;
+        private readonly int _instanceId;
+
+        public GameController(IGameService gameService)
+        {
+            _instanceId = Interlocked.Increment(ref _instanceCount);
+            //Debug.WriteLine($"GameController constructor called - Instance #{_instanceId}");
+            _gameService = gameService;
+        }
+
+        [HttpGet(Name = "GameData")]
+        public IEnumerable<Game> Get([FromQuery] FilterSortingGamesParams filterSortingGamesParams)
+        {
+            //Debug.WriteLine(filterSortingGamesParams.SortBy);
+            //Debug.WriteLine(filterSortingGamesParams.Ascending);
+            //Debug.WriteLine(filterSortingGamesParams.Genres!=null ? filterSortingGamesParams.Genres.Count : null);
+            //Debug.WriteLine(filterSortingGamesParams.Platforms!= null ? filterSortingGamesParams.Platforms.Count : null);
+            //Debug.WriteLine(filterSortingGamesParams.SearchText);
+
+            if (filterSortingGamesParams.Platforms == null)
+                filterSortingGamesParams.Platforms = [];
+
+            if (filterSortingGamesParams.Genres == null)
+                filterSortingGamesParams.Genres = [];
+
+            filterSortingGamesParams.Platforms.RemoveAll((el) => el == null);
+            filterSortingGamesParams.Genres.RemoveAll((el) => el == null);
+
+            //Debug.WriteLine(filterSortingGamesParams.Genres.Count);
+            //foreach (var genre in filterSortingGamesParams.Genres)
+            //    Debug.WriteLine("|" + genre + "|");
+
+            var games = _gameService.GetAllAsync(filterSortingGamesParams);
+            //foreach(var g in games)
+            //    Debug.WriteLine(g.Name);
+
+            return games;
+        }
+
+        [HttpGet("{id}", Name = "GetGameById")]
+        public Game Get(int id)
+        {
+            return _gameService.GetByIdAsync(id);
+        }
+
+        [HttpPost(Name = "ModifyGame")]
+        public IActionResult Post(Game game)
+        {
+            _gameService.ModifyAsync(game);
+            return Ok(game);
+        }
+
+        //[HttpPut("{id}", Name = "UpdateGame")]
+        //public void Put(int id, Game game)
+        //{
+        //    _gameService.UpdateAsync(game);
+        //}
+
+        [HttpDelete("{id}", Name = "DeleteGame")]
+        public IActionResult Delete(int id)
+        {
+            _gameService.DeleteAsync(id);
+            return Ok(id);
+        }
     }
-
-    [HttpGet(Name = "GameData")]
-    public IEnumerable<Game> Get([FromQuery] FilterSortingGamesParams filterSortingGamesParams)
-    {
-        Debug.WriteLine(filterSortingGamesParams.SortBy);
-        Debug.WriteLine(filterSortingGamesParams.Ascending);
-        Debug.WriteLine(filterSortingGamesParams.Genres!=null ? filterSortingGamesParams.Genres.Count : null);
-        Debug.WriteLine(filterSortingGamesParams.Platforms!= null ? filterSortingGamesParams.Platforms.Count : null);
-        Debug.WriteLine(filterSortingGamesParams.SearchText);
-
-        if (filterSortingGamesParams.Platforms == null)
-            filterSortingGamesParams.Platforms = [];
-
-        if (filterSortingGamesParams.Genres == null)
-            filterSortingGamesParams.Genres = [];
-
-        filterSortingGamesParams.Platforms.RemoveAll((el) => el == null);
-        filterSortingGamesParams.Genres.RemoveAll((el) => el == null);
-
-        Debug.WriteLine(filterSortingGamesParams.Genres.Count);
-        foreach (var genre in filterSortingGamesParams.Genres)
-            Debug.WriteLine("|" + genre + "|");
-
-        var games = _gameService.GetAllAsync(filterSortingGamesParams);
-        //foreach(var g in games)
-        //    Debug.WriteLine(g.Name);
-
-        return games;
-    }
-
-    [HttpGet("{id}", Name = "GetGameById")]
-    public Game Get(int id)
-    {
-        return _gameService.GetByIdAsync(id);
-    }
-
-    [HttpPost(Name = "ModifyGame")]
-    public IActionResult Post(Game game)
-    {
-        _gameService.ModifyAsync(game);
-        return Ok(game);
-    }
-
-    //[HttpPut("{id}", Name = "UpdateGame")]
-    //public void Put(int id, Game game)
-    //{
-    //    _gameService.UpdateAsync(game);
-    //}
-
-    [HttpDelete("{id}", Name = "DeleteGame")]
-    public IActionResult Delete(int id)
-    {
-        _gameService.DeleteAsync(id);
-        return Ok(id);
-    }
-}
+ }

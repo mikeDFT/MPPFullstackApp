@@ -17,9 +17,9 @@ public class GameService : IGameService
 {
     private readonly IGameRepository _gameRepository;
 
-    public GameService()
+    public GameService(IGameRepository gameRepository)
     {
-        _gameRepository = new GameRepository();
+        _gameRepository = gameRepository;
     }
 
     public List<Game> GetAllAsync(FilterSortingGamesParams filterSortingGamesParams)

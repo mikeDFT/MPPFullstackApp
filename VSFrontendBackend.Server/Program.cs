@@ -1,16 +1,31 @@
+using VSFrontendBackend.Server.Services;
+using VSFrontendBackend.Server.Repository;
+using Microsoft.AspNetCore.WebSockets;
+using backend.Server.Controllers;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddSingleton<IGameRepository, GameRepository>(); // Register repository as singleton
+builder.Services.AddSingleton<IGameService, GameService>(); // Register service as singleton
+builder.Services.AddSingleton<GameController>(); // Register GameController as singleton
+builder.Services.AddSingleton<GeneratingGamesController>(); // Register GeneratingGamesController as singleton
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Add WebSocket support
+builder.Services.AddWebSockets(options =>
+{
+    options.KeepAliveInterval = TimeSpan.FromMinutes(2);
+});
 
 // Add CORS with a more permissive policy for development
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", builder =>
     {
-        builder.WithOrigins("https://localhost:53392")
+        builder.WithOrigins("https://localhost:53392", "https://localhost:7299")
                .AllowAnyHeader()
                .AllowAnyMethod()
                .AllowCredentials(); // Add this if you're using cookies/auth
@@ -39,6 +54,12 @@ app.UseHttpsRedirection();
 app.UseCors("AllowReactApp");
 
 app.UseRouting(); // Add this explicitly
+
+// Add WebSocket middleware
+app.UseWebSockets(new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromMinutes(2)
+});
 
 app.UseAuthorization();
 

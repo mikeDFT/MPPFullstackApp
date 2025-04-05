@@ -1,4 +1,4 @@
-import React, {createContext, useContext, useState, useEffect, useCallback} from 'react';
+import React, {createContext, useContext, useState, useEffect, useCallback, useRef} from 'react';
 import { iconsIDToObjs } from '@/utils/IconIDs.jsx';
 import { UnitTestCRUD } from '@/tests/UnitTestCRUD.jsx';
 import { DEFAULT_PLATFORMS, DEFAULT_GENRES } from '@/utils/GenresPlatforms.jsx';
@@ -28,6 +28,9 @@ export function GameDataProvider({ children }) {
 	const [genreFilters, setGenreFilters] = useState([]);
 	const [platformFilters, setPlatformFilters] = useState([]);
 	const [searchText, setSearchText] = useState("");
+	
+	// Use a ref to track if the component is mounted
+	const isMounted = useRef(true);
 
 	// Save gamesInfo to localStorage whenever it changes
 	useEffect(() => {
@@ -36,6 +39,9 @@ export function GameDataProvider({ children }) {
 
 	// Use useCallback to create a function that updates when dependencies change
 	const fetchWithCurrentState = useCallback(async () => {
+		// Skip fetching if component is unmounted
+		if (!isMounted.current) return;
+		
 		try {
 			// console.log("Fetching with filters:", {
 			// 	sortBy: sorting.by,
@@ -53,8 +59,11 @@ export function GameDataProvider({ children }) {
 				searchText: searchText
 			});
 
-			// Create a new array reference to ensure React detects the change
-			setGamesInfo([...games]);
+			// Only update state if component is still mounted
+			if (isMounted.current) {
+				// Create a new array reference to ensure React detects the change
+				setGamesInfo([...games]);
+			}
 		} catch (error) {
 			console.error('Error fetching games:', error);
 		}
@@ -62,25 +71,21 @@ export function GameDataProvider({ children }) {
 
 	// Effect for polling that uses the callback
 	useEffect(() => {
-		let isSubscribed = true;
+		// Set mounted flag
+		isMounted.current = true;
 		
-		const fetchData = async () => {
-			if (!isSubscribed) return;
-			await fetchWithCurrentState();
-		};
-
 		// Initial fetch
-		fetchData();
+		fetchWithCurrentState();
 		
 		// Set timeout for initial refresh
-		const initialTimeout = setTimeout(fetchData, apiService.INITIAL_REFRESH_TIME);
+		const initialTimeout = setTimeout(fetchWithCurrentState, apiService.INITIAL_REFRESH_TIME);
 		
 		// Set interval for polling
-		const interval = setInterval(fetchData, apiService.POLLING_INTERVAL);
+		const interval = setInterval(fetchWithCurrentState, apiService.POLLING_INTERVAL);
 		
 		// Cleanup function
 		return () => {
-			isSubscribed = false;
+			isMounted.current = false;
 			clearTimeout(initialTimeout);
 			clearInterval(interval);
 		};

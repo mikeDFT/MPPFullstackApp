@@ -61,13 +61,13 @@ export function ModifyDetails({ gameData }) {
         },
     ]
 
-    // Initialize form with existing game data
+    // Initialize form with existing game data - only run once when component mounts or gameData changes
     useEffect(() => {
         for (var i = 0; i < formFields.length; i++) {
             var formFieldDict = formFields[i];
             formFieldDict.useStateList[1](gameData[formFieldDict.fieldName])
         }
-    }, []); // Runs only once when component mounts
+    }, [gameData]); // Add gameData as a dependency to only run when it changes
 
     function updateButtonGroupSelected(optionUseState, newOption) {
         if (optionUseState[0].includes(newOption)) {
@@ -139,13 +139,10 @@ export function ModifyDetails({ gameData }) {
 
     var [dataValid, setDataValid] = useState(isDataValid());
 
-    function setIfDataValid() {
+    // Use useEffect to update dataValid when form fields change
+    useEffect(() => {
         setDataValid(isDataValid());
-    }
-
-    setTimeout(() => {
-        setIfDataValid()
-    }, 1)
+    }, [formFields.map(f => f.useStateList[0])]); // Only run when form field values change
 
     return (
         <div style={{
@@ -183,7 +180,7 @@ export function ModifyDetails({ gameData }) {
                                     : <>
                                         <input type={field.type} className="form-control formDiv" id="floatingInput"
                                                placeholder={field.fieldName} value={field.useStateList[0] || null}
-                                               onChange={(event) => {setIfDataValid(); field.useStateList[1](event.target.value)}}
+                                               onChange={(event) => {field.useStateList[1](event.target.value)}}
                                         />
                                         <label htmlFor="floatingInput" className="formLabel">{field.fieldName}</label>
                                     </>

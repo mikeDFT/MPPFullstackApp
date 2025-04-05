@@ -2,6 +2,15 @@ namespace VSFrontendBackend.Server.Models
 {   
     public class Game
     {
+        // Default constructor for object initializer syntax
+        public Game()
+        {
+            // Initialize collections to prevent null reference exceptions
+            Genres = new List<string>();
+            Platforms = new List<string>();
+        }
+
+        // Constructor with parameters for backward compatibility
         public Game(int id, string name, string iconID, double price, double rating, string description, List<string> genres, List<string> platforms)
         {
             Id = id;
@@ -10,18 +19,18 @@ namespace VSFrontendBackend.Server.Models
             Price = price;
             Rating = rating;
             Description = description;
-            Genres = genres;
-            Platforms = platforms;
+            Genres = genres ?? new List<string>();
+            Platforms = platforms ?? new List<string>();
         }
 
         public static readonly Game emptyGame = new Game(-1, "", "", 0, 0, "", [], []);
 
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string IconID { get; set; }
-        public double Price { get; set; }
-        public double Rating { get; set; }
-        public string Description { get; set; }
+        public int Id { get; set; } = -1;
+        public string Name { get; set; } = "";
+        public string IconID { get; set; } = "";
+        public double Price { get; set; } = 1;
+        public double Rating { get; set; } = 1;
+        public string Description { get; set; } = "";
         public List<string> Genres { get; set; }
         public List<string> Platforms { get; set; }
     }

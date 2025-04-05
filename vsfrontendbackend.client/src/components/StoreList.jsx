@@ -90,7 +90,7 @@ export function StoreList() {
             const { scrollTop, scrollHeight, clientHeight } = container;
             const scrollPercentage = scrollTop / (scrollHeight - clientHeight);
             
-            console.log(scrollPercentage)
+            // console.log(scrollPercentage)
             // load more when scrolling down (near bottom)
             if (scrollPercentage > 0.7) {
                 loadMoreItems();
@@ -119,7 +119,7 @@ export function StoreList() {
         )
         
         setVisibleRange({ start: 0, end: newEnd });
-        console.log(0 + " to " + newEnd);
+        // console.log(0 + " to " + newEnd);
         setIsLoading(false);
     };
     
@@ -140,9 +140,9 @@ export function StoreList() {
     };
 
     // Debug information
-    console.log("Visible range:", visibleRange);
-    console.log("Visible games count:", visibleGames.length);
-    console.log("Total games:", sortedGames.length);
+    // console.log("Visible range:", visibleRange);
+    // console.log("Visible games count:", visibleGames.length);
+    // console.log("Total games:", sortedGames.length);
 
     return (
         <div style={{
