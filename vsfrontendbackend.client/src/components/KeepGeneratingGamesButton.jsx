@@ -1,141 +1,128 @@
-import React, {useRef, useState, useEffect} from "react";
-import {useGameData} from "@/context/GameDataContext.jsx";
-
+import React, { useState, useEffect, useCallback } from 'react';
+import websocketService from '../services/websocketService';
+import { useGameData } from '../context/GameDataContext';
 
 export function KeepGeneratingGamesButton() {
-	const { actions } = useGameData();
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [isConnected, setIsConnected] = useState(false);
-	const wsRef = useRef(null);
-	const reconnectTimeoutRef = useRef(null);
+	const [retryCount, setRetryCount] = useState(0);
+	const { actions } = useGameData();
 
-	// Connect to WebSocket when component mounts
+	// Function to handle reconnection attempts
+	const attemptReconnect = useCallback(() => {
+		console.log(`Reconnection attempt ${retryCount + 1}`);
+		setRetryCount(prev => prev + 1);
+		websocketService.connect();
+	}, [retryCount]);
+
 	useEffect(() => {
-		connectWebSocket();
+		console.log('KeepGeneratingGamesButton mounted');
 		
-		// Cleanup on unmount
-		return () => {
-			if (wsRef.current) {
-				wsRef.current.close();
-			}
-			if (reconnectTimeoutRef.current) {
-				clearTimeout(reconnectTimeoutRef.current);
-			}
-		};
-	});
-
-	// Handle WebSocket connection
-	const connectWebSocket = () => {
-		// Close existing connection if any
-		if (wsRef.current) {
-			wsRef.current.close();
-		}
-
-		// Create new WebSocket connection
-		// The server is running on https://localhost:7299
-		// For WebSocket, we need to use wss:// for secure connections
-		const wsUrl = 'wss://localhost:7299/api/GeneratingGames/ws';
-		console.log('Connecting to WebSocket:', wsUrl);
-		
-		const ws = new WebSocket(wsUrl);
-		wsRef.current = ws;
-
-		// Set up event handlers
-		ws.onopen = () => {
-			console.log('WebSocket connected');
-			setIsConnected(true);
-			
-			// If we were generating before reconnect, restart generation
-			if (isGenerating) {
-				sendCommand('start');
-			}
-		};
-
-		ws.onclose = (event) => {
-			console.log('WebSocket disconnected', event.code, event.reason);
-			setIsConnected(false);
-			
-			// Attempt to reconnect after a delay
-			reconnectTimeoutRef.current = setTimeout(() => {
-				connectWebSocket();
-			}, 3000);
-		};
-
-		ws.onerror = (error) => {
-			console.error('WebSocket error:', error);
-		};
-
-		ws.onmessage = (event) => {
+		// Register message handlers
+		websocketService.registerMessageHandler('newGame', (message) => {
+			console.log('New game received:', message);
+			// Parse and add the game to the context
 			try {
-				const message = JSON.parse(event.data);
-				console.log('Received message:', message);
-				
-				switch (message.action) {
-					case 'newGame':
-						// Add the new game to the context
-						var newGame = JSON.parse(message.data);
+				if (message.data) {
+					const newGame = JSON.parse(message.data);
+					if (newGame && actions && actions.modifyGame) {
 						actions.modifyGame(newGame);
-						break;
-					case 'started':
-						console.log('Game generation started');
-						break;
-					case 'stopped':
-						console.log('Game generation stopped');
-						setIsGenerating(false);
-						break;
-					default:
-						console.log('Unknown message:', message);
+						console.log('Game added to context:', newGame.Name);
+					}
 				}
 			} catch (error) {
-				console.error('Error processing WebSocket message:', error);
+				console.error('Error processing new game:', error);
 			}
-		};
-	};
+		});
 
-	// Send a command to the WebSocket server
-	const sendCommand = (action) => {
-		if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-			const command = {
-				action: action,
-				data: ''
-			};
-			console.log('Sending command:', command);
-			wsRef.current.send(JSON.stringify(command));
-		} else {
-			console.error('WebSocket is not connected');
-		}
-	};
-
-	// Function to generate a batch of games
-	const generateMoreGames = () => {
-		if (isGenerating) {
-			// Stop generating
-			sendCommand('stop');
-			setIsGenerating(false);
-		} else {
-			// Start generating
-			sendCommand('start');
+		websocketService.registerMessageHandler('started', (message) => {
+			console.log('Generation started:', message);
 			setIsGenerating(true);
+		});
+
+		websocketService.registerMessageHandler('stopped', (message) => {
+			console.log('Generation stopped:', message);
+			setIsGenerating(false);
+		});
+
+		websocketService.registerMessageHandler('pong', (message) => {
+			console.log('Received pong from server:', message);
+			// Server is alive, connection is working
+		});
+
+		// Register connection state change handler
+		websocketService.onConnectionChange((connected) => {
+			console.log('Connection state changed:', connected);
+			setIsConnected(connected);
+			
+			// Reset retry count when connected
+			if (connected) {
+				setRetryCount(0);
+			}
+		});
+
+		// Register generation state change handler
+		websocketService.onGenerationStateChange((generating) => {
+			console.log('Generation state changed:', generating);
+			setIsGenerating(generating);
+		});
+
+		// Connect to WebSocket if not already connected
+		if (!websocketService.getConnectionState()) {
+			console.log('Initiating WebSocket connection...');
+			websocketService.connect();
+		}
+
+		// Cleanup function
+		return () => {
+			console.log('KeepGeneratingGamesButton unmounting, cleaning up...');
+			// Don't close the connection here, let the service handle it
+		};
+	}, [actions, attemptReconnect]);
+
+	// Add an effect for retry logic
+	useEffect(() => {
+		// If not connected and we have retry attempts left, try again after delay
+		if (!isConnected && retryCount < 5) {
+			const retryTimeout = setTimeout(() => {
+				attemptReconnect();
+			}, 3000 + (retryCount * 1000)); // Increase delay with each retry
+			
+			return () => clearTimeout(retryTimeout);
+		}
+	}, [isConnected, retryCount, attemptReconnect]);
+
+	const handleClick = () => {
+		console.log('Button clicked, toggling generation...');
+		if (isConnected) {
+			websocketService.toggleGeneration();
+		} else {
+			// Try to reconnect if disconnected
+			websocketService.connect();
 		}
 	};
 
 	return (
 		<button
+			onClick={handleClick}
+			disabled={!isConnected && retryCount >= 5}
 			style={{
-				width: "100%", 
-				backgroundColor: isGenerating ? "#8B0000" : "#650173", 
-				color: "#FFFFFF", 
-				borderRadius: "0.5em", 
-				padding: "0.5em", 
-				fontSize: "1em",
-				opacity: isConnected ? 1 : 0.5
+				width: "100%",
+				padding: '10px 20px',
+				fontSize: '16px',
+				cursor: isConnected ? 'pointer' : 'not-allowed',
+				backgroundColor: isConnected 
+					? (isGenerating ? '#ff4444' : '#4CAF50') 
+					: (retryCount >= 5 ? '#999999' : '#cccccc'),
+				color: 'white',
+				border: 'none',
+				borderRadius: '4px',
+				transition: 'background-color 0.3s'
 			}}
-			onClick={generateMoreGames}
-			disabled={!isConnected}
 		>
-			{isGenerating ? 'Stop generating' : 'Start generating'}
-			{!isConnected && ' (Connecting...)'}
+			{!isConnected 
+				? (retryCount >= 5 ? 'Connection Failed' : `Connecting... (${retryCount})`) 
+				: (isGenerating ? 'Stop Generating' : 'Start Generating')}
 		</button>
 	);
-}
-
+};

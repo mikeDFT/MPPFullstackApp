@@ -4,7 +4,7 @@ using VSFrontendBackend.Server.Models;
 using System.Diagnostics;
 using System.Threading;
 
-namespace backend.Server.Controllers
+namespace VSFrontendBackend.Server.Controllers
 {
     [ApiController]
     //[Route("[controller]")]
