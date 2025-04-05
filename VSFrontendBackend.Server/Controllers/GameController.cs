@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using VSFrontendBackend.Server.Services;
 using VSFrontendBackend.Server.Models;
 using System.Diagnostics;
-using VSFrontendBackend.Server.Tests;
 
 namespace backend.Server.Controllers;
  
@@ -11,16 +10,11 @@ namespace backend.Server.Controllers;
 [Route("game")]
 public class GameController : ControllerBase
 {
-    private readonly ILogger<GameController> _logger; // for logging data (like printing)
     private readonly IGameService _gameService;
 
     public GameController(ILogger<GameController> logger)
     {
-        _logger = logger;
         _gameService = new GameService();
-
-        GameServiceTests gameServiceTests = new GameServiceTests();
-        gameServiceTests.RunAllTests();
     }
 
     [HttpGet(Name = "GameData")]
