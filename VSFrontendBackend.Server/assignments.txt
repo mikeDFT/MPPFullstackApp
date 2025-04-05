@@ -1,0 +1,45 @@
+/*
+assignment 1: frontend
+have all CRUD operations working, add filtering and sorting
+
+bronze:
+    add filtering for something you haven't added yet and make unit tests for it
+
+silver:
+    o statistica pe baza datelor
+    luam toate datele, le sortam dupa pret, primele 33% is scumpe,
+    urmatoarele 33% medii, ultimele 33% is ieftine
+    folosesc $$$, $$ si $
+
+    -- unit tests commented out for now
+    testat tot - Search bar, Filter, Sorting - unit test here at line aprox 101
+               - Add, Update, Delete - unit test in DataContext at line 25 (change to true)
+
+gold:
+    generam multe date
+    paginare
+    chart pe aceeasi pagina cu statistica
+        asincron genereaza cu faker date si updateaza in timp real chart-ul (setTimeout())
+        putem face chart pe ala din silver
+
+ */
+
+ /*
+ assignment 2:
+ bronze:
+    backend filtering, sorting and unit tests with coverage
+
+ silver:
+    frontend detecteaza ca:
+        reteaua pica / serverul a picat - arata fiecare cu ceva diferit -> pot sa le fac sa mearga frontend/backend pe 2 masini diferite
+        cu offline support, stochez temporar pe localstorage - la filtering, sorting etc nu merge cat serverul a picat
+        
+        endless scrolling cu paginare (cateva pagini sub)
+
+gold:
+    start a thread - like last gold to start a server thread for generating entities, all using websockets
+    ability to upload and download large files (600mb)
+    
+ */
+
+ 
