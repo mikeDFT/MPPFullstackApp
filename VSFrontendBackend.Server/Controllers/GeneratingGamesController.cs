@@ -47,6 +47,12 @@ namespace VSFrontendBackend.Server.Controllers
                 {
                     await HandleWebSocketConnection(connectionId, webSocket);
                 }
+                catch (WebSocketException ex)
+                {
+                    Debug.WriteLine($"WebSocket error: {ex.Message}");
+                    Debug.WriteLine($"WebSocket error code: {ex.WebSocketErrorCode}");
+                    Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                }
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Error handling WebSocket connection: {ex.Message}");
@@ -74,44 +80,112 @@ namespace VSFrontendBackend.Server.Controllers
         {
             Debug.WriteLine($"Starting to handle WebSocket connection for ID: {connectionId}");
             var buffer = new byte[1024 * 4];
-            var receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-
-            while (!receiveResult.CloseStatus.HasValue)
+            
+            try
             {
-                var message = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
-                Debug.WriteLine($"Received message: {message}");
-                
-                try
+                // Start the loop to wait for messages
+                WebSocketReceiveResult? receiveResult = null;
+                do
                 {
-                    var command = JsonSerializer.Deserialize<WebSocketCommand>(message);
-
-                    if (command != null)
+                    try
                     {
-                        Debug.WriteLine($"Processing command: {command.Action}");
-                        switch (command.Action.ToLower())
+                        // Wait for a message from the client
+                        receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                        
+                        if (receiveResult.CloseStatus.HasValue)
                         {
-                            case "start":
-                                await StartGeneratingGames(connectionId, webSocket);
-                                break;
-                            case "stop":
-                                await StopGeneratingGames(connectionId);
-                                break;
-                            default:
-                                Debug.WriteLine($"Unknown command: {command.Action}");
-                                break;
+                             Debug.WriteLine($"WebSocket close message received: {receiveResult.CloseStatus.Value}");
+                             break; // Exit loop if close message received
+                        }
+
+                        var message = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
+                        Debug.WriteLine($"Received message: {message}");
+                    
+                        try
+                        {
+                            var command = JsonSerializer.Deserialize<WebSocketCommand>(message);
+
+                            if (command != null)
+                            {
+                                Debug.WriteLine($"Processing command: {command.Action}");
+                                switch (command.Action.ToLower())
+                                {
+                                    case "start":
+                                        await StartGeneratingGames(connectionId, webSocket);
+                                        break;
+                                    case "stop":
+                                        await StopGeneratingGames(connectionId);
+                                        break;
+                                    case "ping":
+                                        await HandlePing(connectionId, webSocket);
+                                        break;
+                                    default:
+                                        Debug.WriteLine($"Unknown command: {command.Action}");
+                                        break;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Error processing message: {ex.Message}");
                         }
                     }
-                }
-                catch (Exception ex)
+                    catch (WebSocketException ex) when (ex.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
+                    {
+                         Debug.WriteLine($"WebSocket connection closed prematurely: {ex.Message}");
+                         break; // Exit loop on premature close
+                    }
+                    catch (WebSocketException ex)
+                    {
+                        Debug.WriteLine($"WebSocket receive error: {ex.Message} Code: {ex.WebSocketErrorCode}");
+                        break; // Exit loop on other WebSocket errors
+                    }
+                     catch (Exception ex) // Catch other potential exceptions during receive
+                    {
+                        Debug.WriteLine($"General error during WebSocket receive: {ex.Message}");
+                        break; // Exit loop on general errors
+                    }
+
+                } while (webSocket.State == WebSocketState.Open); // Continue while the socket is open
+
+                Debug.WriteLine($"Exited WebSocket receive loop for connection ID: {connectionId}. State: {webSocket.State}");
+
+                if (receiveResult != null && receiveResult.CloseStatus.HasValue)
                 {
-                    Debug.WriteLine($"Error processing message: {ex.Message}");
+                    Debug.WriteLine($"Closing WebSocket gracefully. Status: {receiveResult.CloseStatus.Value}");
+                    await webSocket.CloseAsync(receiveResult.CloseStatus.Value, receiveResult.CloseStatusDescription, CancellationToken.None);
                 }
-
-                receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                else if (webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.CloseReceived)
+                {
+                    Debug.WriteLine($"Closing WebSocket due to loop exit. Current State: {webSocket.State}");
+                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Server closing connection", CancellationToken.None);
+                }
             }
-
-            Debug.WriteLine($"WebSocket connection closing with status: {receiveResult.CloseStatus}");
-            await webSocket.CloseAsync(receiveResult.CloseStatus.Value, receiveResult.CloseStatusDescription, CancellationToken.None);
+            catch (WebSocketException ex)
+            {
+                Debug.WriteLine($"WebSocket error in HandleWebSocketConnection: {ex.Message}");
+                Debug.WriteLine($"WebSocket error code: {ex.WebSocketErrorCode}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
+             catch (Exception ex)
+            {
+                 Debug.WriteLine($"General error in HandleWebSocketConnection: {ex.Message}");
+                 Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
+            finally
+            {
+                // Ensure cleanup runs even if exceptions occur
+                 Debug.WriteLine($"Ensuring connection cleanup for ID: {connectionId}");
+                 _activeConnections.TryRemove(connectionId, out _);
+                 if (_generationTasks.TryRemove(connectionId, out var cts))
+                 {
+                     Debug.WriteLine($"Cancelling generation task for connection ID: {connectionId}");
+                     cts.Cancel();
+                     cts.Dispose();
+                 }
+                 // Consider disposing the WebSocket object if not done automatically
+                 // webSocket.Dispose(); 
+            }
         }
 
         private async Task StartGeneratingGames(string connectionId, WebSocket webSocket)
@@ -237,6 +311,35 @@ namespace VSFrontendBackend.Server.Controllers
             else
             {
                 Debug.WriteLine($"No active generation task found for connection ID: {connectionId}");
+            }
+        }
+
+        private async Task HandlePing(string connectionId, WebSocket webSocket)
+        {
+            Debug.WriteLine($"Ping received from connection ID: {connectionId}");
+            
+            if (webSocket.State == WebSocketState.Open)
+            {
+                try
+                {
+                    var response = new WebSocketMessage
+                    {
+                        Action = "pong",
+                        Data = "Server is alive"
+                    };
+                    var responseJson = JsonSerializer.Serialize(response);
+                    var responseBytes = Encoding.UTF8.GetBytes(responseJson);
+                    await webSocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+                    Debug.WriteLine($"Pong sent to client for connection ID: {connectionId}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error sending pong: {ex.Message}");
+                }
+            }
+            else
+            {
+                Debug.WriteLine($"Cannot send pong - WebSocket not open for connection ID: {connectionId}");
             }
         }
     }

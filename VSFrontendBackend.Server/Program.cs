@@ -1,23 +1,28 @@
 using VSFrontendBackend.Server.Services;
 using VSFrontendBackend.Server.Repository;
+using VSFrontendBackend.Server.Controllers;
 using Microsoft.AspNetCore.WebSockets;
-using backend.Server.Controllers;
+using System.Net.WebSockets;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddSingleton<IGameRepository, GameRepository>(); // Register repository as singleton
 builder.Services.AddSingleton<IGameService, GameService>(); // Register service as singleton
-builder.Services.AddSingleton<GameController>(); // Register GameController as singleton
-builder.Services.AddSingleton<GeneratingGamesController>(); // Register GeneratingGamesController as singleton
+
+// Controllers should be registered using the standard DI system
+// Remove these singleton registrations for controllers
+// builder.Services.AddSingleton<GameController>(); 
+// builder.Services.AddSingleton<GeneratingGamesController>(); 
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add WebSocket support
+// Add WebSocket support with a shorter keep-alive interval
 builder.Services.AddWebSockets(options =>
 {
-    options.KeepAliveInterval = TimeSpan.FromMinutes(2);
+    options.KeepAliveInterval = TimeSpan.FromSeconds(30); // Shorter interval for more reliable connection
 });
 
 // Add CORS with a more permissive policy for development
@@ -25,7 +30,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", builder =>
     {
-        builder.WithOrigins("https://localhost:53392", "https://localhost:7299")
+        builder.WithOrigins("https://localhost:53392", "https://localhost:7299", "localhost:7299")
                .AllowAnyHeader()
                .AllowAnyMethod()
                .AllowCredentials(); // Add this if you're using cookies/auth
@@ -55,10 +60,10 @@ app.UseCors("AllowReactApp");
 
 app.UseRouting(); // Add this explicitly
 
-// Add WebSocket middleware
+// Add WebSocket middleware with shorter keep-alive interval
 app.UseWebSockets(new WebSocketOptions
 {
-    KeepAliveInterval = TimeSpan.FromMinutes(2)
+    KeepAliveInterval = TimeSpan.FromSeconds(30) // Shorter interval for more reliable connection
 });
 
 app.UseAuthorization();
@@ -67,6 +72,7 @@ app.UseAuthorization();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+// Map controllers AFTER UseWebSockets
 app.MapControllers();
 
 // This could be interfering with API calls
