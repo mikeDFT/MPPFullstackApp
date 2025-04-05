@@ -6,29 +6,50 @@ import { apiService } from "@/services/apiService.js";
 import { useState, useEffect } from "react";
 
 function ModifyPage() {
-	const { iconsIDToObjs } = useGameData();
+	const { iconsIDToObjs, gamesInfo } = useGameData();
 	const location = useLocation();
+	const [gameData, setGameData] = useState(null);
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState(null);
 
 	var gameID = location.state?.gameID || null;
 
-	// Declare a state variable to hold the game data
-	const [gameData, setGameData] = useState(null);
-
-	console.log("ID:" + gameID);
 	useEffect(() => {
 		async function fetchGameData() {
 			try {
-				const data = await apiService.getGame(gameID);
-				setGameData(data); // Set the state with the fetched data
+				setIsLoading(true);
+				setError(null);
+
+				// Try to get data from API first
+				try {
+					const data = await apiService.getGame(gameID);
+					setGameData(data);
+					return;
+				} catch (apiError) {
+					console.log("API request failed, trying to get data from context");
+					
+					// If API fails, try to get data from context
+					const gameFromContext = gamesInfo.find(game => game.Id === gameID);
+					if (gameFromContext) {
+						setGameData(gameFromContext);
+						return;
+					}
+					
+					// If not found in context either, throw error
+					throw new Error("Game not found in context");
+				}
 			} catch (error) {
 				console.error("Error fetching game data:", error);
+				setError(error.message);
+			} finally {
+				setIsLoading(false);
 			}
-		};
+		}
 
-		console.log("IDDD:" + gameID);
-		if(gameID != null)
-			fetchGameData(); // Call the async function
-		else {
+		if (gameID != null) {
+			fetchGameData();
+		} else {
+			// Set default empty game data for new game
 			setGameData({
 				"Id": 1,
 				"Name": "",
@@ -38,19 +59,23 @@ function ModifyPage() {
 				"Description": "",
 				"Genres": [],
 				"Platforms": [],
-			})
+			});
+			setIsLoading(false);
 		}
-	}, [gameID]); // Dependency array to run effect when gameID changes
+	}, [gameID, gamesInfo]); // Add gamesInfo to dependencies
 
-	if (!gameData) {
+	if (isLoading) {
 		return <div>Loading...</div>;
+	}
+
+	if (error) {
+		return <div>Error: {error}</div>;
 	}
 
 	return (
 		<div style={{ margin: "2rem 0 0 0", display: "flex", justifyContent: "center"}}>
 			<div style={{padding: "1em 2em 1em 1em", flex: "0 0 20%"}}>
 				<img src={iconsIDToObjs[gameData.IconID]} alt={"icon"} style={{
-					// margin: "0 0 1rem 0",
 					borderRadius: "1rem",
 					height: "23rem",
 					width: "auto",

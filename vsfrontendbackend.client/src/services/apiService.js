@@ -1,5 +1,5 @@
 //import { env } from 'process';
-import { useNavigatorOnLine } from '../utils/OnlineChecker';
+import { getOnLineStatus } from '../utils/OnlineChecker';
 
 // Get the API URL from environment variables or use default
 // shamelessly stolen from vite.config.js
@@ -11,25 +11,77 @@ env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:729
 let isServerUp = true;
 let serverStatusListeners = new Set();
 
+function resetLocalStorageQueue() {
+    localStorage.setItem('requestQueue', [])
+}
+// resetLocalStorageQueue();
+
 // Request queue system
 const requestQueue = {
     queue: [],
     isProcessing: false,
+
+    // Load queue from localStorage
+    loadQueue: () => {
+        try {
+            const savedQueue = localStorage.getItem('requestQueue');
+            if (savedQueue) {
+                const parsedQueue = JSON.parse(savedQueue);
+                // Recreate the execute functions for each queued request
+                requestQueue.queue = parsedQueue.map(item => ({
+                    ...item,
+                    execute: () => {
+                        const { method, url, body } = item;
+                        return fetch(url, {
+                            method,
+                            headers: body ? { 'Content-Type': 'application/json' } : undefined,
+                            body: body ? JSON.stringify(body) : undefined
+                        }).then(handleResponse);
+                    }
+                }));
+                console.log('Loaded queue from localStorage:', requestQueue.queue);
+            }
+        } catch (error) {
+            console.error('Error loading queue from localStorage:', error);
+        }
+    },
+
+    // Save queue to localStorage
+    saveQueue: () => {
+        try {
+            // Only save the necessary data, not the functions
+            const queueToSave = requestQueue.queue.map(item => ({
+                method: item.method,
+                url: item.url,
+                body: item.body,
+                timestamp: item.timestamp
+            }));
+            localStorage.setItem('requestQueue', JSON.stringify(queueToSave));
+            console.log('Saved queue to localStorage:', queueToSave);
+        } catch (error) {
+            console.error('Error saving queue to localStorage:', error);
+        }
+    },
+
     add: (request) => {
         requestQueue.queue.push(request);
+        requestQueue.saveQueue();
         console.log(`Request queued. Queue length: ${requestQueue.queue.length}`);
     },
+
     process: async () => {
         if (requestQueue.isProcessing || requestQueue.queue.length === 0) return;
         
         requestQueue.isProcessing = true;
         console.log(`Processing ${requestQueue.queue.length} queued requests...`);
+        console.log(requestQueue.queue);
 
         while (requestQueue.queue.length > 0 && isServerUp && getOnLineStatus()) {
             const request = requestQueue.queue[0];
             try {
                 await request.execute();
                 requestQueue.queue.shift(); // Remove the processed request
+                requestQueue.saveQueue(); // Save updated queue
                 console.log(`Request processed successfully. ${requestQueue.queue.length} requests remaining.`);
             } catch (error) {
                 console.error('Failed to process queued request:', error);
@@ -40,6 +92,9 @@ const requestQueue = {
         requestQueue.isProcessing = false;
     }
 };
+
+// Load queue on startup
+requestQueue.loadQueue();
 
 export const serverStatus = {
     isUp: () => isServerUp,
@@ -92,7 +147,7 @@ export const checkServerStatus = async () => {
         requestQueue.process();
         return true;
     } catch (error) {
-        console.error('Server status check failed:', error);
+        console.warn('Server status check failed:', error);
         isServerUp = false;
         serverStatusListeners.forEach(listener => listener(false));
         return false;
@@ -100,9 +155,18 @@ export const checkServerStatus = async () => {
 };
 
 // Helper function to create a queued request
-const createQueuedRequest = (execute) => ({
-    execute,
-    timestamp: Date.now()
+const createQueuedRequest = (method, url, body = null) => ({
+    method,
+    url,
+    body,
+    timestamp: Date.now(),
+    execute: () => {
+        return fetch(url, {
+            method,
+            headers: body ? { 'Content-Type': 'application/json' } : undefined,
+            body: body ? JSON.stringify(body) : undefined
+        }).then(handleResponse);
+    }
 });
 
 // Set up network status change listener
@@ -144,13 +208,16 @@ export const apiService = {
 
         try {
             if (!canMakeRequest()) {
-                requestQueue.add(createQueuedRequest(executeRequest));
-                throw new Error(getOnLineStatus() ? 'Server is down. Request queued.' : 'Network is down. Request queued.');
+                // Return data from localStorage when offline
+                const savedGames = localStorage.getItem('gamesInfo');
+                return savedGames ? JSON.parse(savedGames) : [];
             }
             return await executeRequest();
         } catch (error) {
             console.error('Failed to fetch games:', error);
-            throw error;
+            // Return data from localStorage on error
+            const savedGames = localStorage.getItem('gamesInfo');
+            return savedGames ? JSON.parse(savedGames) : [];
         }
     },
 
@@ -163,8 +230,14 @@ export const apiService = {
 
         try {
             if (!canMakeRequest()) {
-                requestQueue.add(createQueuedRequest(executeRequest));
-                throw new Error(getOnLineStatus() ? 'Server is down. Request queued.' : 'Network is down. Request queued.');
+                // Return data from localStorage when offline
+                const savedGames = localStorage.getItem('gamesInfo');
+                if (savedGames) {
+                    const games = JSON.parse(savedGames);
+                    const game = games.find(g => g.Id === id);
+                    if (game) return game;
+                }
+                throw new Error('Game not found in localStorage');
             }
             return await executeRequest();
         } catch (error) {
@@ -186,7 +259,7 @@ export const apiService = {
 
         try {
             if (!canMakeRequest()) {
-                requestQueue.add(createQueuedRequest(executeRequest));
+                requestQueue.add(createQueuedRequest('POST', `${API_BASE_URL}/game`, game));
                 throw new Error(getOnLineStatus() ? 'Server is down. Request queued.' : 'Network is down. Request queued.');
             }
             return await executeRequest();
@@ -207,7 +280,7 @@ export const apiService = {
 
         try {
             if (!canMakeRequest()) {
-                requestQueue.add(createQueuedRequest(executeRequest));
+                requestQueue.add(createQueuedRequest('DELETE', `${API_BASE_URL}/game/${id}`));
                 throw new Error(getOnLineStatus() ? 'Server is down. Request queued.' : 'Network is down. Request queued.');
             }
             return await executeRequest();

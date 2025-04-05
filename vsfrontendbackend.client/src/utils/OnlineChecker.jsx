@@ -24,4 +24,4 @@ const useNavigatorOnLine = () => {
     return status;
 };
 
-export {useNavigatorOnLine};
+export { getOnLineStatus, useNavigatorOnLine};
