@@ -1,9 +1,10 @@
 import logo from '../assets/AmethystIcon.png';
-import { Checkbox } from "@/components/Checkbox.jsx"
+import { StatusIndicator } from "./StatusIndicator.jsx";
 
 export function NavigationTopBar() {
     return (
         <div style={{ width: "100%", height: "10%", margin: "2rem 0 0 0"}}>
+            <h1><StatusIndicator/></h1>
             <ul>
                 <a href={"/"}>
                     <div style={{float: "left", display: "flex", paddingLeft: "50px"}}>
