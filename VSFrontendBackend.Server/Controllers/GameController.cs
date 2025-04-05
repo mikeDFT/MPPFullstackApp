@@ -40,8 +40,8 @@ public class GameController : ControllerBase
             Debug.WriteLine("|" + genre + "|");
 
         var games = _gameService.GetAllAsync(filterSortingGamesParams);
-        foreach(var g in games)
-            Debug.WriteLine(g.Name);
+        //foreach(var g in games)
+        //    Debug.WriteLine(g.Name);
 
         return games;
     }

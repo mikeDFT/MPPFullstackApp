@@ -1,11 +1,15 @@
 import Pagination from 'react-bootstrap/Pagination';
 import { Link } from 'react-router-dom';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UnitTestFilteringSortingSearch } from "@/tests/UnitTestFilteringSortingSearch.jsx";
 import { useGameData } from "@/context/GameDataContext";
 import { StatisticsForPrice } from "@/utils/StatisticsForPrice.jsx"
 
 import "@/css/pagination.css";
+
+// constants for infinite scrolling
+const ITEMS_PER_PAGE = 3;
+const PAGES_TO_LOAD_BELOW = 2;
 
 function sortGames(games, sortBy, ascending) {
     // Create a copy of the array to avoid mutating the original
@@ -36,102 +40,109 @@ function sortGames(games, sortBy, ascending) {
 
 export function StoreList() {
     const { gamesInfo, iconsIDToObjs, sorting } = useGameData();
-
-    // function sortFunc(a, b) {
-    //     if (sorting.by == "Price")
-    //         return a.Price - b.Price;
-    //     if (sorting.by == "Rating")
-    //         return a.Rating - b.Rating;
-    //     if (sorting.by == "Name")
-    //         return a.Name.localeCompare(b.Name);
-    // }
-
-    // function applyFiltersToData(filters) {
-    //     var filtered = gamesInfo.filter(gameData => {
-    //         for (var f of filters) {
-    //             if (!gameData.Genres.includes(f) && !gameData.Platforms.includes(f))
-    //                 return false;
-    //         }
-
-    //         return gameData.Name.toLowerCase().includes(searchText.toLowerCase());
-    //     })
-
-    //     var sorted = filtered.sort(sortFunc);
-
-    //     // console.log("sorting.ascending:", sorting.ascending)
-    //     // console.log("sorting.by:", sorting.by)
-    //     if (sorting.ascending)
-    //         return sorted;
-    //     else
-    //         return sorted.reverse();
-    // }
-
-    // unitTestData(gamesInfo, applyFiltersToData, filters, sorting, searchText);
-    var priceStatistics = StatisticsForPrice(gamesInfo)
-
-    var [gamesPerPage, setGamesPerPage] = useState(5);
-    var [currentPage, setCurrentPage] = useState(1);
-    var [totalPages, setTotalPages] = useState(1);
-    var [paginatedGames, setPaginatedGames] = useState([]);
+    const containerRef = useRef(null);
+    const [visibleGames, setVisibleGames] = useState([]);
+    const [visibleRange, setVisibleRange] = useState({ start: 0, end: ITEMS_PER_PAGE + (1+PAGES_TO_LOAD_BELOW)});
+    const [sortedGames, setSortedGames] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const priceStatistics = StatisticsForPrice(gamesInfo);
+    const scrollPositionRef = useRef(0);
+    const isInitialLoadRef = useRef(true);
     
+    // sort games whenever sorting changes
     useEffect(() => {
-        const gamesList = sortGames(gamesInfo, sorting.by, sorting.ascending);
-        // const filteredData = applyFiltersToData(filters);
-        setTotalPages(Math.ceil(gamesList.length / gamesPerPage));
-        if(totalPages < currentPage) {
-            setCurrentPage(Math.max(1, totalPages));
-        }
+        const sorted = sortGames(gamesInfo, sorting.by, sorting.ascending);
+        setSortedGames(sorted);
         
-        // Get current page data
-        const indexOfLastGame = currentPage * gamesPerPage;
-        const indexOfFirstGame = indexOfLastGame - gamesPerPage;
-        setPaginatedGames(gamesList.slice(indexOfFirstGame, indexOfLastGame));
-    }, [sorting, currentPage, gamesInfo, gamesPerPage]);
-    
-    // Handle pagination clicks
-    const handlePageClick = (pageNumber) => {
-        if (pageNumber < 1 || pageNumber > totalPages || pageNumber === currentPage) {
-            return;
+        // Only reset visible range on initial load or when sorting changes
+        if (isInitialLoadRef.current) {
+            setVisibleRange({ start: 0, end: ITEMS_PER_PAGE + (1+PAGES_TO_LOAD_BELOW) });
+            isInitialLoadRef.current = false;
         }
-        setCurrentPage(pageNumber);
+    }, [gamesInfo, sorting]);
+    
+    // update visible games when visible range changes
+    useEffect(() => {
+        setVisibleGames(sortedGames.slice(visibleRange.start, visibleRange.end));
+    }, [visibleRange, sortedGames]);
+    
+    // restore scroll position after games update
+    useEffect(() => {
+        if (containerRef.current && !isInitialLoadRef.current) {
+            // Use setTimeout to ensure the DOM has updated
+            setTimeout(() => {
+                containerRef.current.scrollTop = scrollPositionRef.current;
+            }, 0);
+        }
+    }, [sortedGames]);
+    
+    // handle scroll events
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+        
+        const handleScroll = () => {
+            if (isLoading) return;
+            
+            // Save current scroll position
+            scrollPositionRef.current = container.scrollTop;
+            
+            const { scrollTop, scrollHeight, clientHeight } = container;
+            const scrollPercentage = scrollTop / (scrollHeight - clientHeight);
+            
+            console.log(scrollPercentage)
+            // load more when scrolling down (near bottom)
+            if (scrollPercentage > 0.7) {
+                loadMoreItems();
+            }
+            
+            // remove items when scrolling up (near top)
+            if (scrollPercentage < 0.3) {
+                removeItems();
+            }
+        };
+        
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, [visibleRange, isLoading, sortedGames.length]);
+    
+    // load more items when scrolling down
+    const loadMoreItems = () => {
+        if (isLoading) return;
+        
+        setIsLoading(true);
+        
+        // calculate new end index
+        const newEnd = Math.min(
+            sortedGames.length,
+            visibleRange.end + ITEMS_PER_PAGE
+        )
+        
+        setVisibleRange({ start: 0, end: newEnd });
+        console.log(0 + " to " + newEnd);
+        setIsLoading(false);
     };
     
-    // Generate page numbers array
-    const getPageNumbers = () => {
-        const pageNumbers = [];
+    // remove items when scrolling up
+    const removeItems = () => {
+        if (isLoading) return;
         
-        // always include first page
-        pageNumbers.push(1);
+        setIsLoading(true);
+
+        // calculate new end index to maintain the window size
+        const newEnd = Math.max(
+            ITEMS_PER_PAGE * (1+PAGES_TO_LOAD_BELOW),
+            visibleRange.end - ITEMS_PER_PAGE
+        )
         
-        // add ... if needed
-        if (currentPage > 3) {
-            pageNumbers.push('...');
-        }
-        
-        // add at most 2 pages around current page (2 pages before, 2 pages after)
-        for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
-            pageNumbers.push(i);
-        }
-        
-        // add ... if needed
-        if (currentPage < totalPages - 2) {
-            pageNumbers.push('...');
-        }
-        
-        // always include last page if there's more than 1 page
-        if (totalPages > 1) {
-            pageNumbers.push(totalPages);
-        }
-        
-        return pageNumbers;
+        setVisibleRange({ start: 0, end: newEnd });
+        setIsLoading(false);
     };
 
-    function updateGamesPerPage(inputValue) {
-        var newVal = Math.min(Math.max(inputValue, 1), 50)
-        if (newVal !== gamesPerPage) {
-            setGamesPerPage(newVal);
-        }
-    }
+    // Debug information
+    console.log("Visible range:", visibleRange);
+    console.log("Visible games count:", visibleGames.length);
+    console.log("Total games:", sortedGames.length);
 
     return (
         <div style={{
@@ -141,108 +152,97 @@ export function StoreList() {
             color: "white",
             padding: "2rem",
             width: "100%",
+            height: "180vh", // set a fixed height for scrolling
+            overflow: "hidden", // prevent body scrolling
+            display: "flex",
+            flexDirection: "column"
         }}>
-            <Link to={"/modify"} state={{gameData: null}} className={"gameButton"} style={{float: "right"}}>
-                <button className={"gameButton addAGameButton"}>
-                    Add a game
-                </button>
-            </Link>
             <div>
-                <h3 className="font-bold">Store:</h3>
-                <h4 style={{color: "rgba(255, 255, 255, 0.5)"}}>Best results for: "Good games"</h4>
+                <div>
+                    <Link to={"/modify"} state={{gameData: null}} className={"gameButton"} style={{float: "right"}}>
+                        <button className={"gameButton addAGameButton"}>
+                            Add a game
+                        </button>
+                    </Link>
+                </div>
+                <div>
+                    <h3 className="font-bold">Store:</h3>
+                    <h4 style={{color: "rgba(255, 255, 255, 0.5)"}}>Best results for: "Good games"</h4>
+                </div>
             </div>
 
             <div style={{padding: "0.3rem"}}></div>
 
-            <div>
-                {paginatedGames.map((game) => (
-                    <div style={{display: "flex",
-                        // justifyContent: "space-between",
-                        backgroundColor: "#2f1f59",
-                        borderRadius: "1rem",
-                        border: "1px solid rgba(255, 255, 255, 0.5)",
-                        margin: "1rem 0",
-                    }} key={game.Id}>
-                        <img src={iconsIDToObjs[game.IconID]} style={{
-                            padding: "1rem",
-                            borderRadius: "30px",
-                            height: "11rem",
-                            width: "auto",
-                        }}  alt={game.Name}/>
-                        <div style={{padding: "1rem"}}>
-                            <h5>{game.Name}</h5>
-                            <h6 style={{color: "rgba(255, 255, 255, 0.6)"}}>{game.Rating}/5 stars</h6>
-                            <div style={{margin: "2.5rem 0 0 0"}}>
-                                <Link to={"/view"} state={{ gameID: game.Id }} className={"gameButton"}>
-                                    <button className={"gameButton viewGameButton"}>
-                                        View
-                                    </button>
-                                </Link>
+            <div 
+                ref={containerRef}
+                style={{
+                    flex: 1,
+                    overflowY: "auto",
+                    paddingRight: "10px",
+                }}
+                className={ "gamesContainer" }
+            >
+                {visibleGames.length === 0 ? (
+                    <div style={{textAlign: "center", padding: "2rem"}}>
+                        No games available
+                    </div>
+                ) : (
+                    visibleGames.map((game) => (
+                        <div style={{display: "flex",
+                            // justifyContent: "space-between",
+                            backgroundColor: "#2f1f59",
+                            borderRadius: "1rem",
+                            border: "1px solid rgba(255, 255, 255, 0.5)",
+                            margin: "1rem 0",
+                        }} key={game.Id}>
+                            <img src={iconsIDToObjs[game.IconID]} style={{
+                                padding: "1rem",
+                                borderRadius: "30px",
+                                height: "11rem",
+                                width: "auto",
+                            }}  alt={game.Name}/>
+                            <div style={{padding: "1rem"}}>
+                                <h5>{game.Name}</h5>
+                                <h6 style={{color: "rgba(255, 255, 255, 0.6)"}}>{game.Rating}/5 stars</h6>
+                                <div style={{margin: "2.5rem 0 0 0"}}>
+                                    <Link to={"/view"} state={{ gameID: game.Id }} className={"gameButton"}>
+                                        <button className={"gameButton viewGameButton"}>
+                                            View
+                                        </button>
+                                    </Link>
 
-                                <Link to={"/modify"} state={{ gameID: game.Id }} className={"gameButton"}>
-                                    <button className={"gameButton modifyGameButton"}>
-                                        Modify
-                                    </button>
-                                </Link>
+                                    <Link to={"/modify"} state={{ gameID: game.Id }} className={"gameButton"}>
+                                        <button className={"gameButton modifyGameButton"}>
+                                            Modify
+                                        </button>
+                                    </Link>
 
-                                <Link to={"/gamble"} state={{ gameID: game.Id }} className={"gameButton"}>
-                                    <button className={"gameButton"}>
-                                        Gamble
-                                    </button>
-                                </Link>
+                                    <Link to={"/gamble"} state={{ gameID: game.Id }} className={"gameButton"}>
+                                        <button className={"gameButton"}>
+                                            Gamble
+                                        </button>
+                                    </Link>
+                                </div>
+                            </div>
+                            <div style={{padding: "1rem", marginLeft: "auto"}}>
+                                <h5 style={{color: "#A6FF00"}}> ${game.Price} </h5>
+                                <h5 style={{color: "#A6FF00", float: "right"}}>{priceStatistics[game.ID]}</h5>
                             </div>
                         </div>
-                        <div style={{padding: "1rem", marginLeft: "auto"}}>
-                            <h5 style={{color: "#A6FF00"}}> ${game.Price} </h5>
-                            <h5 style={{color: "#A6FF00", float: "right"}}>{priceStatistics[game.ID]}</h5>
-                        </div>
+                    ))
+                )}
+                
+                {isLoading && (
+                    <div style={{textAlign: "center", padding: "1rem"}}>
+                        Loading more games...
                     </div>
-                ))}
-            </div>
-
-            <div className="custom-pagination">
-				<button 
-					className={`pagination-item ${currentPage === 1 ? 'disabled' : ''}`}
-					onClick={() => handlePageClick(1)}
-					disabled={currentPage === 1}
-				>&laquo;</button>
-				<button 
-					className={`pagination-item ${currentPage === 1 ? 'disabled' : ''}`}
-					onClick={() => handlePageClick(currentPage - 1)}
-					disabled={currentPage === 1}
-				>&lsaquo;</button>
-				
-				{getPageNumbers().map((page, index) => (
-					<button
-						key={index}
-						className={`pagination-item ${page === currentPage ? 'active' : ''} ${page === '...' ? 'disabled' : ''}`}
-						onClick={() => page !== '...' ? handlePageClick(page) : null}
-					>
-						{page}
-					</button>
-				))}
-				
-				<button 
-					className={`pagination-item ${currentPage === totalPages ? 'disabled' : ''}`}
-					onClick={() => handlePageClick(currentPage + 1)}
-					disabled={currentPage === totalPages}
-				>&rsaquo;</button>
-				<button 
-					className={`pagination-item ${currentPage === totalPages ? 'disabled' : ''}`}
-					onClick={() => handlePageClick(totalPages)}
-					disabled={currentPage === totalPages}
-				>&raquo;</button>
-            </div>
-
-            <div style={{
-                margin: "auto",
-                width: "20%",
-                padding: "1rem"}}>
-                <input type="number" className="form-control formDiv" id="floatingInput"
-                       placeholder="Games per page" value={gamesPerPage || null}
-                       onChange={(event) => {updateGamesPerPage(event.target.value)}}
-                />
-                <label htmlFor="floatingInput" className="formLabel">Games per page</label>
+                )}
+                
+                {visibleRange.end >= sortedGames.length && sortedGames.length > 0 && (
+                    <div style={{textAlign: "center", padding: "1rem"}}>
+                        No more games to load
+                    </div>
+                )}
             </div>
         </div>
     )
