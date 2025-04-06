@@ -12,6 +12,7 @@ using VSFrontendBackend.Server.Models;
 using VSFrontendBackend.Server.Services;
 using VSFrontendBackend.Server.Utils;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 namespace VSFrontendBackend.Server.Controllers
 {
@@ -44,6 +45,7 @@ namespace VSFrontendBackend.Server.Controllers
         }
 
         [Route("ws")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public async Task GetWebSocket()
         {
             Debug.WriteLine("WebSocket request received");

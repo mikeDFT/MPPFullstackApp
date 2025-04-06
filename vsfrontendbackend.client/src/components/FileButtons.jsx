@@ -9,6 +9,8 @@ export function FileButtons() {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [downloadProgress, setDownloadProgress] = useState(0);
     const [error, setError] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [receivedFile, setReceivedFile] = useState(null);
 
     // check if file exists on server
     useEffect(() => {
@@ -24,18 +26,19 @@ export function FileButtons() {
         checkFileExists();
     }, []);
 
-    async function handleUploadClick() {
+    // Function to handle file selection
+    function handleSelectFile() {
         // create a file input element
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.accept = '*/*'; // accept all file types
         
         // handle file selection
-        fileInput.onchange = async (e) => {
+        fileInput.onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
-            console.log(file);
+            console.log('File selected:', file);
             
             // check file size (600MB limit)
             const maxSize = 600 * 1024 * 1024; // 600MB in bytes
@@ -45,27 +48,42 @@ export function FileButtons() {
             }
             
             setError(null);
-            setIsGenerating(true);
-            setUploadProgress(0);
-            
-            try {
-                // upload the file
-                await apiService.uploadFile(file);
-                setUploadProgress(100);
-                setCanDownload(true);
-            } catch (error) {
-                setError(`Upload failed: ${error.message}`);
-            } finally {
-                setIsGenerating(false);
-            }
+            setSelectedFile(file);
         };
         
         // trigger file selection dialog
         fileInput.click();
     }
 
-    async function handleDownloadClick() {
-        if (!canDownload) return;
+    // Function to send file to server
+    async function handleSendToServer() {
+        if (!selectedFile) {
+            setError('No file selected. Please select a file first.');
+            return;
+        }
+        
+        setError(null);
+        setIsGenerating(true);
+        setUploadProgress(0);
+        
+        try {
+            // upload the file
+            await apiService.uploadFile(selectedFile);
+            setUploadProgress(100);
+            setCanDownload(true);
+        } catch (error) {
+            setError(`Upload failed: ${error.message}`);
+        } finally {
+            setIsGenerating(false);
+        }
+    }
+
+    // Function to receive file from server
+    async function handleReceiveFromServer() {
+        if (!canDownload) {
+            setError('No file available on server to receive.');
+            return;
+        }
         
         setError(null);
         setDownloadProgress(0);
@@ -75,11 +93,29 @@ export function FileButtons() {
             const { blob, filename } = await apiService.downloadFile();
             setDownloadProgress(100);
             
+            // Create a file object from the blob
+            const file = new File([blob], filename, { type: blob.type });
+            setReceivedFile(file);
+            
+            console.log('File received from server:', file);
+        } catch (error) {
+            setError(`Download failed: ${error.message}`);
+        }
+    }
+
+    // Function to download file from frontend
+    function handleDownloadFromFrontend() {
+        if (!receivedFile) {
+            setError('No file received from server. Please receive a file first.');
+            return;
+        }
+        
+        try {
             // create a download link
-            const url = window.URL.createObjectURL(blob);
+            const url = window.URL.createObjectURL(receivedFile);
             const a = document.createElement('a');
             a.href = url;
-            a.download = filename;
+            a.download = receivedFile.name;
             document.body.appendChild(a);
             a.click();
             
@@ -107,7 +143,7 @@ export function FileButtons() {
         
         <div style={{ marginBottom: '10px' }}>
             <button
-                onClick={handleUploadClick}
+                onClick={handleSelectFile}
                 disabled={!isConnected || isGenerating}
                 style={{
                     width: "100%",
@@ -123,7 +159,29 @@ export function FileButtons() {
                     transition: 'background-color 0.3s'
                 }}
             >
-                {isGenerating ? 'Uploading...' : 'Upload file'}
+                {selectedFile ? `File selected: ${selectedFile.name}` : 'Select file'}
+            </button>
+        </div>
+        
+        <div style={{ marginBottom: '10px' }}>
+            <button
+                onClick={handleSendToServer}
+                disabled={!isConnected || isGenerating || !selectedFile}
+                style={{
+                    width: "100%",
+                    padding: '10px 20px',
+                    fontSize: '16px',
+                    cursor: isConnected && !isGenerating && selectedFile ? 'pointer' : 'not-allowed',
+                    backgroundColor: isConnected && selectedFile
+                        ? (isGenerating ? '#ff4444' : '#4CAF50') 
+                        : '#cccccc',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    transition: 'background-color 0.3s'
+                }}
+            >
+                {isGenerating ? 'Sending...' : 'Send to server'}
             </button>
             {uploadProgress > 0 && uploadProgress < 100 && (
                 <div style={{ 
@@ -143,9 +201,9 @@ export function FileButtons() {
             )}
         </div>
         
-        <div>
+        <div style={{ marginBottom: '10px' }}>
             <button
-                onClick={handleDownloadClick}
+                onClick={handleReceiveFromServer}
                 disabled={!canDownload}
                 style={{
                     width: "100%",
@@ -159,7 +217,7 @@ export function FileButtons() {
                     transition: 'background-color 0.3s'
                 }}
             >
-                {downloadProgress > 0 && downloadProgress < 100 ? 'Downloading...' : 'Download file'}
+                {downloadProgress > 0 && downloadProgress < 100 ? 'Receiving...' : 'Receive from server'}
             </button>
             {downloadProgress > 0 && downloadProgress < 100 && (
                 <div style={{ 
@@ -177,6 +235,26 @@ export function FileButtons() {
                     }}></div>
                 </div>
             )}
+        </div>
+        
+        <div>
+            <button
+                onClick={handleDownloadFromFrontend}
+                disabled={!receivedFile}
+                style={{
+                    width: "100%",
+                    padding: '10px 20px',
+                    fontSize: '16px',
+                    cursor: receivedFile ? 'pointer' : 'not-allowed',
+                    backgroundColor: receivedFile ? '#4CAF50' : '#cccccc',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    transition: 'background-color 0.3s'
+                }}
+            >
+                {receivedFile ? `Download: ${receivedFile.name}` : 'Download file'}
+            </button>
         </div>
     </div>
     );
