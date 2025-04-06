@@ -293,10 +293,11 @@ export const apiService = {
     // File upload and download methods
     uploadFile: async (file) => {
         const formData = new FormData();
+        // formData.append('file', file);
         formData.append('file', file);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/files/upload`, {
+            const response = await fetch(`${API_BASE_URL}/files/upload`, {
                 method: 'POST',
                 body: formData,
             });
@@ -305,8 +306,11 @@ export const apiService = {
                 const errorText = await response.text();
                 throw new Error(`Upload failed: ${errorText}`);
             }
+            
+            var json = await response.json();
+            console.log(json);
 
-            return await response.json();
+            return await json;
         } catch (error) {
             console.error('Error uploading file:', error);
             throw error;
@@ -315,7 +319,7 @@ export const apiService = {
 
     downloadFile: async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/files/download`);
+            const response = await fetch(`${API_BASE_URL}/files/download`);
 
             if (!response.ok) {
                 if (response.status === 404) {
@@ -348,7 +352,7 @@ export const apiService = {
 
     checkFileExists: async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/files/exists`);
+            const response = await fetch(`${API_BASE_URL}/files/exists`);
             
             if (!response.ok) {
                 throw new Error('Failed to check if file exists');
