@@ -331,19 +331,26 @@ export const apiService = {
 
             // Get the filename from the Content-Disposition header
             const contentDisposition = response.headers.get('Content-Disposition');
+            console.log(response)
+            console.log(contentDisposition)
             let filename = 'downloaded_file';
             
             if (contentDisposition) {
                 const filenameMatch = contentDisposition.match(/filename="(.+)"/);
                 if (filenameMatch && filenameMatch[1]) {
                     filename = filenameMatch[1];
+                    console.log('Filename from server:', filename);
                 }
             }
 
-            // Create a blob from the response
+            // Get content type from response headers
+            const contentType = response.headers.get('Content-Type');
+            console.log('Content-Type from server:', contentType);
+
+            // Create a blob from the response with the correct content type
             const blob = await response.blob();
             
-            return { blob, filename };
+            return { blob, filename, contentType };
         } catch (error) {
             console.error('Error downloading file:', error);
             throw error;

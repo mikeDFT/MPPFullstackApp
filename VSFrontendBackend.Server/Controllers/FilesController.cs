@@ -93,6 +93,12 @@ namespace VSFrontendBackend.Server.Controllers
                 // Dispose the original stream
                 fileStream.Dispose();
                 
+                // Set the Content-Disposition header with the original filename
+                // This ensures the browser will use the original filename when downloading
+                Response.Headers.Add("Content-Disposition", $"attachment; filename=\"{fileName}\"");
+
+                Debug.WriteLine(contentType);
+                Debug.WriteLine(fileName);
                 Debug.WriteLine("=== DOWNLOAD FILE END ===");
                 return File(memoryStream, contentType, fileName);
             }
@@ -148,6 +154,35 @@ namespace VSFrontendBackend.Server.Controllers
                     ".gif" => MediaTypeNames.Image.Gif,
                     ".csv" => "text/csv",
                     ".mp3" => "audio/mpeg",
+                    ".wav" => "audio/wav",
+                    ".ogg" => "audio/ogg",
+                    ".mp4" => "video/mp4",
+                    ".webm" => "video/webm",
+                    ".zip" => "application/zip",
+                    ".rar" => "application/x-rar-compressed",
+                    ".7z" => "application/x-7z-compressed",
+                    ".json" => "application/json",
+                    ".xml" => "application/xml",
+                    ".html" => "text/html",
+                    ".css" => "text/css",
+                    ".js" => "application/javascript",
+                    ".py" => "text/x-python",
+                    ".java" => "text/x-java-source",
+                    ".c" => "text/x-c",
+                    ".cpp" => "text/x-c++",
+                    ".cs" => "text/x-csharp",
+                    ".php" => "text/x-php",
+                    ".rb" => "text/x-ruby",
+                    ".swift" => "text/x-swift",
+                    ".go" => "text/x-go",
+                    ".rs" => "text/x-rust",
+                    ".kt" => "text/x-kotlin",
+                    ".ts" => "text/x-typescript",
+                    ".md" => "text/markdown",
+                    ".sql" => "text/x-sql",
+                    ".sh" => "text/x-shellscript",
+                    ".bat" => "text/x-batch",
+                    ".ps1" => "text/x-powershell",
                     _ => MediaTypeNames.Application.Octet
                 };
                 

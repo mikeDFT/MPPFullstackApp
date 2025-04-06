@@ -90,14 +90,17 @@ export function FileButtons() {
         
         try {
             // download the file
-            const { blob, filename } = await apiService.downloadFile();
+            const { blob, filename, contentType } = await apiService.downloadFile();
             setDownloadProgress(100);
             
-            // Create a file object from the blob
-            const file = new File([blob], filename, { type: blob.type });
+            // Create a file object from the blob with the original filename and content type
+            const file = new File([blob], filename, { type: contentType });
             setReceivedFile(file);
             
             console.log('File received from server:', file);
+            console.log('File name:', file.name);
+            console.log('File type:', file.type);
+            console.log('File size:', file.size);
         } catch (error) {
             setError(`Download failed: ${error.message}`);
         }
