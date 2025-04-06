@@ -288,5 +288,77 @@ export const apiService = {
             console.error('Failed to delete game:', error);
             throw error;
         }
+    },
+
+    // File upload and download methods
+    uploadFile: async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/files/upload`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Upload failed: ${errorText}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            throw error;
+        }
+    },
+
+    downloadFile: async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/files/download`);
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('No file found on server');
+                }
+                const errorText = await response.text();
+                throw new Error(`Download failed: ${errorText}`);
+            }
+
+            // Get the filename from the Content-Disposition header
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = 'downloaded_file';
+            
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+
+            // Create a blob from the response
+            const blob = await response.blob();
+            
+            return { blob, filename };
+        } catch (error) {
+            console.error('Error downloading file:', error);
+            throw error;
+        }
+    },
+
+    checkFileExists: async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/files/exists`);
+            
+            if (!response.ok) {
+                throw new Error('Failed to check if file exists');
+            }
+            
+            const data = await response.json();
+            return data.exists;
+        } catch (error) {
+            console.error('Error checking if file exists:', error);
+            return false;
+        }
     }
 };

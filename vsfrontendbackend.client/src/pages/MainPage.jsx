@@ -4,6 +4,7 @@ import {FilterSortingBar} from "@/components/FilterSortingBar.jsx";
 import {StoreList} from "@/components/StoreList.jsx";
 import {RatingChart} from "@/components/RatingChart.jsx";
 import {KeepGeneratingGamesButton} from "@/components/KeepGeneratingGamesButton.jsx";
+import { FileButtons } from "@/components/FileButtons";
 
 function MainPage() {
     //const { actions } = useGameData();
@@ -32,6 +33,8 @@ function MainPage() {
                 <RatingChart />
                 <div style={{padding: "1em"}}></div>
                 <KeepGeneratingGamesButton />
+                <div style={{padding: "1em"}}></div>
+                <FileButtons />
             </div>
 
             <div style={{padding: "1em", flex: "0 0 65%"}}>

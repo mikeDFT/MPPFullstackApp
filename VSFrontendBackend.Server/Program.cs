@@ -3,12 +3,49 @@ using VSFrontendBackend.Server.Repository;
 using Microsoft.AspNetCore.WebSockets;
 using System.Net.WebSockets;
 using VSFrontendBackend.Server.Controllers;
+using System.IO;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+// Configure Kestrel for large file uploads
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // Set the limits for the entire application
+    options.Limits.MaxRequestBodySize = 629145600; // 600MB in bytes
+});
+
+// Configure IIS for large file uploads
+builder.Services.Configure<IISServerOptions>(options =>
+{
+    options.MaxRequestBodySize = 629145600; // 600MB in bytes
+});
 
 // Add services to the container.
 builder.Services.AddSingleton<IGameRepository, GameRepository>(); // Register repository as singleton
 builder.Services.AddSingleton<IGameService, GameService>(); // Register service as singleton
+
+// Register file services
+string fileStoragePath = Path.Combine(Directory.GetCurrentDirectory(), "FileStorage");
+builder.Services.AddSingleton<IFilesRepository>(new FilesRepository(fileStoragePath));
+builder.Services.AddSingleton<IFilesService, FilesService>();
+
+// Configure request size limits for the entire application
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+    options.Limits.MaxRequestBodySize = 629145600; // 600MB in bytes
+});
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 629145600; // 600MB in bytes
+});
 
 // Controllers should be registered using the standard DI system
 // Remove these singleton registrations for controllers
@@ -75,7 +112,22 @@ app.UseStaticFiles();
 // Map controllers AFTER UseWebSockets
 app.MapControllers();
 
-// This could be interfering with API calls
-// app.MapFallbackToFile("/index.html");
+// Add global exception handler
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Unhandled exception occurred");
+        
+        // Instead of re-throwing, return a 500 response
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await context.Response.WriteAsync($"An error occurred: {ex.Message}");
+    }
+});
 
 app.Run();
