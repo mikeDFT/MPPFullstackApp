@@ -6,6 +6,8 @@ using VSFrontendBackend.Server.Controllers;
 using System.IO;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Diagnostics;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,12 +47,8 @@ builder.Services.Configure<KestrelServerOptions>(options =>
 builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = 629145600; // 600MB in bytes
+    options.ValueLengthLimit = 629145600; // 600MB in bytes
 });
-
-// Controllers should be registered using the standard DI system
-// Remove these singleton registrations for controllers
-// builder.Services.AddSingleton<GameController>(); 
-// builder.Services.AddSingleton<GeneratingGamesController>(); 
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -70,13 +68,13 @@ builder.Services.AddCors(options =>
         builder.WithOrigins("https://localhost:53392", "https://localhost:7299", "localhost:7299")
                .AllowAnyHeader()
                .AllowAnyMethod()
-               .AllowCredentials(); // Add this if you're using cookies/auth
+               .AllowCredentials(); // for cookies/auth
     });
 });
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    // This preserves the property names exactly as defined in your C# models
+    // This preserves the property names exactly as defined in the C# models
     options.JsonSerializerOptions.PropertyNamingPolicy = null;
 });
 
@@ -128,6 +126,23 @@ app.Use(async (context, next) =>
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
         await context.Response.WriteAsync($"An error occurred: {ex.Message}");
     }
+});
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "text/plain";
+        var errorFeature = context.Features.Get<IExceptionHandlerFeature>();
+        if (errorFeature != null)
+        {
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogError(errorFeature.Error, "Unhandled exception");
+            Debug.WriteLine("ErrorFeature: " + errorFeature.Error);
+            await context.Response.WriteAsync("An unexpected error occurred.");
+        }
+    });
 });
 
 app.Run();

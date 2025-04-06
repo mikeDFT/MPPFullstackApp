@@ -297,7 +297,7 @@ export const apiService = {
         formData.append('file', file);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/files/upload`, {
+            const response = await fetch(`${API_BASE_URL}/files/wrong/upload`, {
                 method: 'POST',
                 body: formData,
             });

@@ -11,7 +11,7 @@ using VSFrontendBackend.Server.Services;
 namespace VSFrontendBackend.Server.Controllers
 {
     [ApiController]
-    [Route("api/files")]
+    [Route("files")]
     public class FilesController : ControllerBase
     {
         private readonly IFilesService _filesService;
