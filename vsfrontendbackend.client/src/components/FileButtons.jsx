@@ -34,6 +34,8 @@ export function FileButtons() {
         fileInput.onchange = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
+
+            console.log(file);
             
             // check file size (600MB limit)
             const maxSize = 600 * 1024 * 1024; // 600MB in bytes
