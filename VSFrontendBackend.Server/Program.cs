@@ -2,6 +2,7 @@ using VSFrontendBackend.Server.Services;
 using VSFrontendBackend.Server.Repository;
 using Microsoft.AspNetCore.WebSockets;
 using System.Net.WebSockets;
+using VSFrontendBackend.Server.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import websocketService from '../services/websocketService';
 import { useGameData } from '../context/GameDataContext';
 
@@ -7,6 +7,7 @@ export function KeepGeneratingGamesButton() {
 	const [isConnected, setIsConnected] = useState(false);
 	const [retryCount, setRetryCount] = useState(0);
 	const { actions } = useGameData();
+	const hasInitialized = useRef(false);
 
 	// Function to handle reconnection attempts
 	const attemptReconnect = useCallback(() => {
@@ -17,6 +18,14 @@ export function KeepGeneratingGamesButton() {
 
 	useEffect(() => {
 		console.log('KeepGeneratingGamesButton mounted');
+		
+		// Use a ref to avoid duplicate initialization in React strict mode
+		if (hasInitialized.current) {
+			console.log('Component already initialized, skipping duplicate init');
+			return;
+		}
+		
+		hasInitialized.current = true;
 		
 		// Register message handlers
 		websocketService.registerMessageHandler('newGame', (message) => {
@@ -67,29 +76,35 @@ export function KeepGeneratingGamesButton() {
 			setIsGenerating(generating);
 		});
 
-		// Connect to WebSocket if not already connected
-		if (!websocketService.getConnectionState()) {
-			console.log('Initiating WebSocket connection...');
+		// Connect to WebSocket if not already connected or connecting
+		// Using a short timeout to avoid multiple connections in development mode
+		const connectTimer = setTimeout(() => {
+			console.log('Initiating WebSocket connection after delay...');
 			websocketService.connect();
-		}
-
-		// Cleanup function
+		}, 300);
+		
 		return () => {
-			console.log('KeepGeneratingGamesButton unmounting, cleaning up...');
-			// Don't close the connection here, let the service handle it
+			// Only clear the initialization timer, don't disconnect on unmount
+			clearTimeout(connectTimer);
 		};
-	}, [actions, attemptReconnect]);
+	}, []); // Empty dependency array to run only once
 
-	// Add an effect for retry logic
+	// Add an effect for retry logic - separate from main effect
 	useEffect(() => {
+		let retryTimeout;
+		
 		// If not connected and we have retry attempts left, try again after delay
 		if (!isConnected && retryCount < 5) {
-			const retryTimeout = setTimeout(() => {
+			retryTimeout = setTimeout(() => {
 				attemptReconnect();
 			}, 3000 + (retryCount * 1000)); // Increase delay with each retry
-			
-			return () => clearTimeout(retryTimeout);
 		}
+		
+		return () => {
+			if (retryTimeout) {
+				clearTimeout(retryTimeout);
+			}
+		};
 	}, [isConnected, retryCount, attemptReconnect]);
 
 	const handleClick = () => {

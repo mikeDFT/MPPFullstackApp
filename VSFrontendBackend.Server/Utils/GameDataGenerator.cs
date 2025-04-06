@@ -48,13 +48,32 @@ namespace VSFrontendBackend.Server.Utils
             "Educational", "Music", "Party", "Roguelike", "Sandbox", "Survival"
         };
 
+        private static readonly List<string> randomIconIds = new List<string>
+        {
+            //"",
+            "ROR2Icon",
+            "DBDIcon",
+            "Portal2Icon",
+            "DeadCellsIcon",
+            "NMSIcon",
+            "AmogusIcon",
+            "DuolingoIcon",
+            "DarkNDIcon",
+            "DeathsDoorIcon",
+            "KillKnightIcon",
+            "LethalCompIcon",
+            "REPOIcon",
+            "SuperHotIcon",
+            "PalworldIcon",
+            "SlayTheSpireIcon",
+            "BPMIcon"
+        };
+
         private static readonly Random Random = new Random();
 
         private static string GetRandomIconId()
         {
-            // In a real implementation, you would have a list of icon IDs
-            // For now, we'll just return a random number as a string
-            return Random.Next(1, 100).ToString();
+            return randomIconIds[Random.Next(randomIconIds.Count)];
         }
 
         private static int GetRandomGameId(List<Game> gamesList)
