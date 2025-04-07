@@ -1,6 +1,9 @@
 // Add a static instance tracking for dev mode detection
 let instanceCounter = 0;
 
+// Import configuration
+import { SERVER_IP, SERVER_HTTPS_PORT, WSS_URL } from '../config';
+
 // WebSocket service to handle all WebSocket connections and logic
 class WebSocketService {
 	constructor() {
@@ -50,9 +53,10 @@ class WebSocketService {
 
 		try {
 			// Create new WebSocket connection
-			// The server is running on https://x.x.x.x:7299
-			const serverUrl = 'http://192.168.40.178:7299';
-			const wsUrl = `wss://${serverUrl}/api/GeneratingGames/ws`;
+			// The server is running on the configured IP and port
+			// Use the same protocol as the current page (ws or wss)
+			const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+			const wsUrl = `${protocol}//${SERVER_IP}:${SERVER_HTTPS_PORT}/api/GeneratingGames/ws`;
 			console.log('Connecting to WebSocket:', wsUrl);
 			
 			this.ws = new WebSocket(wsUrl);
