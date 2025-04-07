@@ -50,8 +50,8 @@ class WebSocketService {
 
 		try {
 			// Create new WebSocket connection
-			// The server is running on https://localhost:7299
-			const serverUrl = 'localhost:7299';
+			// The server is running on https://x.x.x.x:7299
+			const serverUrl = 'http://192.168.40.178:7299';
 			const wsUrl = `wss://${serverUrl}/api/GeneratingGames/ws`;
 			console.log('Connecting to WebSocket:', wsUrl);
 			

@@ -34,8 +34,8 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
     }
 }
 
-const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
-    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:7299';
+const target = env.ASPNETCORE_HTTPS_PORT ? `http://192.168.40.178:53392/:${env.ASPNETCORE_HTTPS_PORT}` :
+    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'http://192.168.40.178:53392/:7299';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -45,17 +45,32 @@ export default defineConfig({
             '@': fileURLToPath(new URL('./src', import.meta.url))
         }
     },
+    //plugins: [react()],
     server: {
+        host: true, // enables access over LAN
+        port: parseInt(env.DEV_SERVER_PORT || '53392'),  // or any port you like
         proxy: {
             '^/weatherforecast': {
                 target,
                 secure: false
             }
         },
-        port: parseInt(env.DEV_SERVER_PORT || '53392'),
-        https: {
-            key: fs.readFileSync(keyFilePath),
-            cert: fs.readFileSync(certFilePath),
-        }
+        //https: {
+        //    key: fs.readFileSync(keyFilePath),
+        //    cert: fs.readFileSync(certFilePath),
+        //}
     }
+    //server: {
+    //    proxy: {
+    //        '^/weatherforecast': {
+    //            target,
+    //            secure: false
+    //        }
+    //    },
+    //    port: parseInt(env.DEV_SERVER_PORT || '53392'),
+    //    https: {
+    //        key: fs.readFileSync(keyFilePath),
+    //        cert: fs.readFileSync(certFilePath),
+    //    }
+    //}
 })
