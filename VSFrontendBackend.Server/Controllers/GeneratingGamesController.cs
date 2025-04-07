@@ -69,7 +69,6 @@ namespace VSFrontendBackend.Server.Controllers
                         }
                         catch (Exception ex) {
                             Debug.WriteLine($"Error handling WebSocket connection: {ex.Message}");
-                            Debug.WriteLine($"Stack trace: {ex.StackTrace}");
                         }
                         finally {
                             // signal that the connection has finished

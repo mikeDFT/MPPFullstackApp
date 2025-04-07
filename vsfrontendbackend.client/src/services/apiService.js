@@ -1,12 +1,11 @@
 //import { env } from 'process';
 import { getOnLineStatus } from '../utils/OnlineChecker';
-import { SERVER_HTTP_URL, SERVER_HTTPS_URL } from '../config';
 
 // Get the API URL from environment variables or use default
 // shamelessly stolen from vite.config.js
 const env = import.meta.env;
-const API_BASE_URL = env.ASPNETCORE_HTTPS_PORT ? `${SERVER_HTTPS_URL}:${env.ASPNETCORE_HTTPS_PORT}` :
-    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : SERVER_HTTP_URL;
+const API_BASE_URL = env.ASPNETCORE_HTTPS_PORT ? `https://192.168.40.178:${env.ASPNETCORE_HTTPS_PORT}` :
+    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'http://192.168.40.178:7299';
 
 // Track server status
 let isServerUp = true;
