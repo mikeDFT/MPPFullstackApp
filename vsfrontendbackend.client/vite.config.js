@@ -7,6 +7,9 @@ import path from 'path';
 import child_process from 'child_process';
 import { env } from 'process';
 
+// Import configuration
+import { SERVER_IP, SERVER_HTTP_PORT, SERVER_HTTPS_PORT, CLIENT_PORT } from './src/config.js';
+
 const baseFolder =
     env.APPDATA !== undefined && env.APPDATA !== ''
         ? `${env.APPDATA}/ASP.NET/https`
@@ -34,8 +37,8 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
     }
 }
 
-const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
-    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:7299';
+const target = env.ASPNETCORE_HTTPS_PORT ? `http://${SERVER_IP}:${CLIENT_PORT}/:${env.ASPNETCORE_HTTPS_PORT}` :
+    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : `http://${SERVER_IP}:${CLIENT_PORT}/:${SERVER_HTTPS_PORT}`;
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -45,17 +48,32 @@ export default defineConfig({
             '@': fileURLToPath(new URL('./src', import.meta.url))
         }
     },
+    //plugins: [react()],
     server: {
+        host: true, // enables access over LAN
+        port: parseInt(env.DEV_SERVER_PORT || CLIENT_PORT),  // or any port you like
         proxy: {
             '^/weatherforecast': {
                 target,
                 secure: false
             }
         },
-        port: parseInt(env.DEV_SERVER_PORT || '53392'),
-        https: {
-            key: fs.readFileSync(keyFilePath),
-            cert: fs.readFileSync(certFilePath),
-        }
+        //https: {
+        //    key: fs.readFileSync(keyFilePath),
+        //    cert: fs.readFileSync(certFilePath),
+        //}
     }
+    //server: {
+    //    proxy: {
+    //        '^/weatherforecast': {
+    //            target,
+    //            secure: false
+    //        }
+    //    },
+    //    port: parseInt(env.DEV_SERVER_PORT || '53392'),
+    //    https: {
+    //        key: fs.readFileSync(keyFilePath),
+    //        cert: fs.readFileSync(certFilePath),
+    //    }
+    //}
 })
