@@ -7,6 +7,9 @@ import path from 'path';
 import child_process from 'child_process';
 import { env } from 'process';
 
+// Import configuration
+import { SERVER_IP, SERVER_HTTP_PORT, SERVER_HTTPS_PORT, CLIENT_PORT } from './src/config.js';
+
 const baseFolder =
     env.APPDATA !== undefined && env.APPDATA !== ''
         ? `${env.APPDATA}/ASP.NET/https`
@@ -34,8 +37,8 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
     }
 }
 
-const target = env.ASPNETCORE_HTTPS_PORT ? `http://192.168.40.178:53392/:${env.ASPNETCORE_HTTPS_PORT}` :
-    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'http://192.168.40.178:53392/:7299';
+const target = env.ASPNETCORE_HTTPS_PORT ? `http://${SERVER_IP}:${CLIENT_PORT}/:${env.ASPNETCORE_HTTPS_PORT}` :
+    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : `http://${SERVER_IP}:${CLIENT_PORT}/:${SERVER_HTTPS_PORT}`;
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -48,7 +51,7 @@ export default defineConfig({
     //plugins: [react()],
     server: {
         host: true, // enables access over LAN
-        port: parseInt(env.DEV_SERVER_PORT || '53392'),  // or any port you like
+        port: parseInt(env.DEV_SERVER_PORT || CLIENT_PORT),  // or any port you like
         proxy: {
             '^/weatherforecast': {
                 target,

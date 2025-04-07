@@ -65,7 +65,18 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", builder =>
     {
-        builder.WithOrigins("http://192.168.40.178:53392", "http://192.168.40.178:7299") // "https://localhost:53392", "https://localhost:7299", "localhost:7299"
+        // Get client URL from environment variables or use default
+        string clientUrl = Environment.GetEnvironmentVariable("CLIENT_URL") ?? 
+            $"http://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.159"}:{Environment.GetEnvironmentVariable("CLIENT_PORT") ?? "53392"}";
+        
+        // Get server URL from environment variables or use default
+        string serverUrl = $"http://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.159"}:{Environment.GetEnvironmentVariable("SERVER_HTTPS_PORT") ?? "7299"}";
+        
+        // Add WebSocket URL
+        string wsUrl = $"ws://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.159"}:{Environment.GetEnvironmentVariable("SERVER_HTTPS_PORT") ?? "7299"}";
+        string wssUrl = $"wss://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.159"}:{Environment.GetEnvironmentVariable("SERVER_HTTPS_PORT") ?? "7299"}";
+        
+        builder.WithOrigins(clientUrl, serverUrl, wsUrl, wssUrl)
                .AllowAnyHeader()
                .AllowAnyMethod()
                .AllowCredentials(); // for cookies/auth
@@ -98,7 +109,7 @@ app.UseRouting(); // Add this explicitly
 // Add WebSocket middleware with shorter keep-alive interval
 app.UseWebSockets(new WebSocketOptions
 {
-    KeepAliveInterval = TimeSpan.FromSeconds(30) // Shorter interval for more reliable connection
+    KeepAliveInterval = TimeSpan.FromSeconds(30), // Shorter interval for more reliable connection
 });
 
 app.UseAuthorization();
