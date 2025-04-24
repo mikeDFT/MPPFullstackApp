@@ -1,5 +1,5 @@
 // Server configuration
-export const SERVER_IP = '192.168.10.159';
+export const SERVER_IP = '192.168.40.188';
 
 // Server ports
 export const SERVER_HTTP_PORT = '5048';

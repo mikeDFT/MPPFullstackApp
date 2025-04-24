@@ -1,4 +1,4 @@
-namespace VSFrontendBackend.Server.Models
+namespace VSFrontendBackend.Server.Domain
 {   
     public class Game
     {
