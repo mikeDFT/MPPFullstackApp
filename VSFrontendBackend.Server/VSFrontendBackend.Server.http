@@ -1,4 +1,4 @@
-@VSFrontendBackend.Server_HostAddress = http://192.168.10.159:5048 // {{$processEnv SERVER_HTTP_URL}}
+@VSFrontendBackend.Server_HostAddress = http://192.168.40.188:5048 // {{$processEnv SERVER_HTTP_URL}}
 
 
 GET {{VSFrontendBackend.Server_HostAddress}}/weatherforecast/

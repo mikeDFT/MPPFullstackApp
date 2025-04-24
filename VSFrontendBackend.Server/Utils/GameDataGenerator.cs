@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using VSFrontendBackend.Server.Models;
+using VSFrontendBackend.Server.Domain;
 
 namespace VSFrontendBackend.Server.Utils
 {
