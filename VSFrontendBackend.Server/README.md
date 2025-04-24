@@ -33,7 +33,7 @@ The `launchSettings.json` file now includes environment variables that can be ac
 "environmentVariables": {
   "ASPNETCORE_ENVIRONMENT": "Development",
   "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy",
-  "SERVER_IP": "192.168.40.188",
+  "SERVER_IP": "192.168.10.160",
   "SERVER_HTTP_PORT": "5048",
   "SERVER_HTTPS_PORT": "7299",
   "SERVER_IIS_PORT": "33367",

@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <SpaRoot>..\vsfrontendbackend.client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
-    <SpaProxyServerUrl>http://192.168.40.188:53392</SpaProxyServerUrl> <!--https://localhost:53392-->
+    <SpaProxyServerUrl>http://192.168.10.160:53392</SpaProxyServerUrl> <!--https://localhost:53392-->
   </PropertyGroup>
 
   <ItemGroup>
