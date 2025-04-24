@@ -11,10 +11,10 @@ namespace VSFrontendBackend.Server.Domain
         }
 
         // Constructor with parameters for backward compatibility
-        public Game(int id, int companyID, string name, string iconID, double price, double rating, string description, List<string> genres, List<string> platforms, Company company)
+        public Game(int id, Company? company, string name, string iconID, double price, double rating, string description, List<string> genres, List<string> platforms)
         {
             Id = id;
-            CompanyID = companyID;
+            CompanyID = company?.Id ?? -1; // FK
             Name = name;
             IconID = iconID;
             Price = price;
@@ -26,7 +26,7 @@ namespace VSFrontendBackend.Server.Domain
             this.Company = company ?? Company.emptyCompany;
         }
 
-        public static readonly Game emptyGame = new Game(-1, -1, "", "", 0, 0, "", [], [], null);
+        public static readonly Game emptyGame = new Game(-1, null, "", "", 0, 0, "", [], []);
 
         public int Id { get; set; } = -1;
         public int CompanyID { get; set; } = -1; // FK

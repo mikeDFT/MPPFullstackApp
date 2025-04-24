@@ -109,6 +109,7 @@ namespace VSFrontendBackend.Server.Utils
             return new Game
             {
                 Id = GetRandomGameId(gamesList),
+                CompanyID = 0,
                 Name = GenerateGameName(),
                 IconID = GetRandomIconId(),
                 Price = Math.Round(Random.NextDouble() * 60 + 0.99, 2),

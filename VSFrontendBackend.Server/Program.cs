@@ -63,9 +63,6 @@ builder.Services.AddWebSockets(options =>
     options.KeepAliveInterval = TimeSpan.FromSeconds(30); // Shorter interval for more reliable connection
 });
 
-Debug.WriteLine("!!!!!!!!!!!!!!");
-Debug.WriteLine(Environment.GetEnvironmentVariable("SERVER_HTTP_PORT"));
-
 // Add CORS with a more permissive policy for development
 builder.Services.AddCors(options =>
 {
