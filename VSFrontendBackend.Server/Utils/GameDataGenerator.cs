@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using VSFrontendBackend.Server.Domain;
+using VSFrontendBackend.Server.Repository;
 
 namespace VSFrontendBackend.Server.Utils
 {
@@ -101,15 +102,19 @@ namespace VSFrontendBackend.Server.Utils
             return array.OrderBy(x => Random.Next()).Take(count).ToList();
         }
 
-        public static Game GenerateGameData(List<Game> gamesList)
+        public static Game GenerateGameData(List<Game> gamesList, CompanyRepository companyRepository)
         {
             var selectedGenres = GetRandomItems(DefaultGenres, 2, 4);
             var selectedPlatforms = GetRandomItems(DefaultPlatforms, 2, 4);
 
+            var cachedCompanies = companyRepository.CachedCompanies;
+            var selectedCompany = cachedCompanies[Random.Next(0, cachedCompanies.Count)];
+
             return new Game
             {
-                Id = GetRandomGameId(gamesList),
-                CompanyID = 0,
+                // Id = GetRandomGameId(gamesList),
+                CompanyID = selectedCompany.Id,
+                Company = selectedCompany,
                 Name = GenerateGameName(),
                 IconID = GetRandomIconId(),
                 Price = Math.Round(Random.NextDouble() * 60 + 0.99, 2),
@@ -120,12 +125,12 @@ namespace VSFrontendBackend.Server.Utils
             };
         }
 
-        public static List<Game> GenerateGames(int count, List<Game> existingGames)
+        public static List<Game> GenerateGames(int count, List<Game> existingGames, CompanyRepository companyRepository)
         {
             var gamesList = new List<Game>(existingGames);
             for (int i = 0; i < count; i++)
             {
-                gamesList.Add(GenerateGameData(gamesList));
+                gamesList.Add(GenerateGameData(gamesList, companyRepository));
             }
             return gamesList;
         }

@@ -1,16 +1,18 @@
 import React from "react";
 import { ModifyDetails } from "@/components/ModifyDetails.jsx";
 import {useLocation} from "react-router-dom";
-import { useGameData } from "@/context/GameDataContext";
+import { useData } from "@/context/DataContext";
 import { apiService } from "@/services/apiService.js";
 import { useState, useEffect, useCallback } from "react";
 
 function ModifyPage() {
-	const { iconsIDToObjs, gamesInfo } = useGameData();
+	const { iconsIDToObjs, games } = useData();
 	const location = useLocation();
 	const [gameData, setGameData] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState(null);
+
+	var gamesInfo = games.gamesInfo;
 
 	var gameID = location.state?.gameID || null;
 

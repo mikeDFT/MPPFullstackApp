@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import websocketService from '../services/websocketService';
-import { useGameData } from '../context/GameDataContext';
+import { useData } from '../context/DataContext';
 
 export function KeepGeneratingGamesButton() {
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [isConnected, setIsConnected] = useState(false);
 	const [retryCount, setRetryCount] = useState(0);
-	const { actions } = useGameData();
+	const { actions } = useData().games;
 	const hasInitialized = useRef(false);
 
 	// Function to handle reconnection attempts

@@ -13,6 +13,7 @@ using VSFrontendBackend.Server.Services;
 using VSFrontendBackend.Server.Utils;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using VSFrontendBackend.Server.Repository;
 
 namespace VSFrontendBackend.Server.Controllers
 {
@@ -21,6 +22,7 @@ namespace VSFrontendBackend.Server.Controllers
     public class GeneratingGamesController : ControllerBase, IDisposable
     {
         private readonly IGameService _gameService;
+        private readonly CompanyRepository _companyRepository;
         private static readonly ConcurrentDictionary<string, CancellationTokenSource> _generationTasks = new ConcurrentDictionary<string, CancellationTokenSource>();
         private static readonly ConcurrentDictionary<string, WebSocket> _activeConnections = new ConcurrentDictionary<string, WebSocket>();
         private const int GenerationTimeoutSeconds = 60;
@@ -29,11 +31,12 @@ namespace VSFrontendBackend.Server.Controllers
 		private readonly IHostApplicationLifetime _appLifetime;
 		private bool _disposed = false;
 
-        public GeneratingGamesController(IGameService gameService, IHostApplicationLifetime appLifetime)
+        public GeneratingGamesController(IGameService gameService, IHostApplicationLifetime appLifetime, CompanyRepository companyRepository)
         {
             _instanceId = Interlocked.Increment(ref _instanceCount);
             Debug.WriteLine($"GeneratingGamesController constructor called - Instance #{_instanceId}");
             _gameService = gameService;
+            _companyRepository = companyRepository;
 			_appLifetime = appLifetime;
 			
 			// register shutdown handler
@@ -355,7 +358,7 @@ namespace VSFrontendBackend.Server.Controllers
                     
                     // Get the current list of games from the service
                     var filterParams = new FilterSortingGamesParams();
-                    var gamesList = _gameService.GetAllAsync(filterParams);
+                    var gamesList = await _gameService.GetAllAsync(filterParams);
                     var random = new Random();
 
                     while (!linkedCts.Token.IsCancellationRequested)
@@ -363,15 +366,15 @@ namespace VSFrontendBackend.Server.Controllers
                         try 
                         {
                             // Generate a new game
-                            var newGame = GameDataGenerator.GenerateGameData(gamesList);
+                            var newGame = GameDataGenerator.GenerateGameData(gamesList, _companyRepository);
                             Debug.WriteLine($"Generated new game: {newGame.Name}");
                             
                             // Add the game to the service
-                            var addedGame = _gameService.ModifyAsync(newGame);
+                            var addedGame = await _gameService.ModifyAsync(newGame);
                             Debug.WriteLine($"Added game to service: {addedGame.Name}");
                             
                             // Update our local list
-                            gamesList = _gameService.GetAllAsync(filterParams);
+                            gamesList = await _gameService.GetAllAsync(filterParams);
 
                             // Send the new game to the client
                             var gameJson = JsonSerializer.Serialize(addedGame);

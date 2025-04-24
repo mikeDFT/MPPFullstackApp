@@ -8,15 +8,13 @@ const env = import.meta.env;
 const API_BASE_URL = env.ASPNETCORE_HTTPS_PORT ? `${SERVER_HTTP_URL}:${env.ASPNETCORE_HTTPS_PORT}` :
     env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : SERVER_HTTP_URL;
 
-console.log(API_BASE_URL);
-
 // Track server status
 let isServerUp = true;
 let serverStatusListeners = new Set();
 
-//function resetLocalStorageQueue() {
+// function resetLocalStorageQueue() {
 //    localStorage.setItem('requestQueue', [])
-//}
+// }
 // resetLocalStorageQueue();
 
 // Request queue system
@@ -182,7 +180,7 @@ if (typeof window !== 'undefined') {
 
 export const apiService = {
     // polling interval in milliseconds (4 seconds) - I will update the game list every 4 seconds
-    POLLING_INTERVAL: 4000,
+    POLLING_INTERVAL: 10000,
     INITIAL_REFRESH_TIME: 300,
 
     // Fetch all games
@@ -289,6 +287,104 @@ export const apiService = {
             return await executeRequest();
         } catch (error) {
             console.error('Failed to delete game:', error);
+            throw error;
+        }
+    },
+
+    // Fetch all companies
+    getAllCompanies: async (params) => {
+        const executeRequest = async () => {
+            const queryParams = new URLSearchParams();
+            
+            if (params.sortBy) queryParams.append('SortBy', params.sortBy);
+            if (params.ascending !== undefined) queryParams.append('Ascending', params.ascending);
+            if (params.searchText) queryParams.append('SearchText', params.searchText);
+
+            const queryString = queryParams.toString();
+            const response = await fetch(`${API_BASE_URL}/company?${queryString}`);
+            return await handleResponse(response);
+        };
+
+        try {
+            if (!canMakeRequest()) {
+                // Return data from localStorage when offline
+                const savedCompanies = localStorage.getItem('companiesInfo');
+                return savedCompanies ? JSON.parse(savedCompanies) : [];
+            }
+            return await executeRequest();
+        } catch (error) {
+            console.error('Failed to fetch companies:', error);
+            // Return data from localStorage on error
+            const savedCompanies = localStorage.getItem('companiesInfo');
+            return savedCompanies ? JSON.parse(savedCompanies) : [];
+        }
+    },
+
+    // Fetch a single company
+    getCompany: async (id) => {
+        const executeRequest = async () => {
+            const response = await fetch(`${API_BASE_URL}/company/${id}`);
+            return await handleResponse(response);
+        };
+
+        try {
+            if (!canMakeRequest()) {
+                // Return data from localStorage when offline
+                const savedCompanies = localStorage.getItem('companiesInfo');
+                if (savedCompanies) {
+                    const companies = JSON.parse(savedCompanies);
+                    const company = companies.find(c => c.Id === id);
+                    if (company) return company;
+                }
+                throw new Error('Company not found in localStorage');
+            }
+            return await executeRequest();
+        } catch (error) {
+            console.error('Failed to fetch company:', error);
+            throw error;
+        }
+    },
+    
+    // Add new company or update an already existing one
+    modifyCompany: async (company) => {
+        const executeRequest = async () => {
+            const response = await fetch(`${API_BASE_URL}/company`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(company)
+            });
+            return await handleResponse(response);
+        };
+
+        try {
+            if (!canMakeRequest()) {
+                requestQueue.add(createQueuedRequest('POST', `${API_BASE_URL}/company`, company));
+                throw new Error(getOnLineStatus() ? 'Server is down. Request queued.' : 'Network is down. Request queued.');
+            }
+            return await executeRequest();
+        } catch (error) {
+            console.error('Failed to modify company:', error);
+            throw error;
+        }
+    },
+
+    // Delete company
+    deleteCompany: async (id) => {
+        const executeRequest = async () => {
+            const response = await fetch(`${API_BASE_URL}/company/${id}`, {
+                method: 'DELETE'
+            });
+            return await handleResponse(response);
+        };
+
+        try {
+            if (!canMakeRequest()) {
+                requestQueue.add(createQueuedRequest('DELETE', `${API_BASE_URL}/company/${id}`));
+                throw new Error(getOnLineStatus() ? 'Server is down. Request queued.' : 'Network is down. Request queued.');
+            }
+            return await executeRequest();
+        } catch (error) {
+            console.error('Failed to delete company:', error);
             throw error;
         }
     },

@@ -63,7 +63,8 @@ To update the server configuration, you need to manually update the following fi
 
 Create a file called appsettings.json in VSFrontendBackend.Server with the following:
 
-```{
+```
+{
   "ConnectionStrings": {
     "DefaultConnection": "Server=.;Database=MyAppDb;Trusted_Connection=True;"
   },

@@ -2,10 +2,10 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
 import { IoMenu } from "react-icons/io5";
 import { IoIosSearch } from "react-icons/io";
-import { useGameData } from "@/context/GameDataContext.jsx";
+import { useData } from "@/context/DataContext.jsx";
 
 export function SearchBar() {
-    const { searchText, setSearchText } = useGameData();
+    const { searchText, setSearchText } = useData().games;
 
     function menuClicked() {
         console.log("e");

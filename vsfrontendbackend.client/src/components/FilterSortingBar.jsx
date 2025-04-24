@@ -1,10 +1,10 @@
 import { ListGroup, Badge } from "react-bootstrap"
 import { useState } from "react";
-import { useGameData } from "@/context/GameDataContext";
+import { useData } from "@/context/DataContext";
 
 export function FilterSortingBar() { // send states (filters and sorting dicts) as params to be used from parent
-    const { DEFAULT_PLATFORMS, DEFAULT_GENRES } = useGameData();
-    const { setSorting, genreFilters, platformFilters, setGenreFilters, setPlatformFilters } = useGameData();
+    const { DEFAULT_PLATFORMS, DEFAULT_GENRES } = useData();
+    const { setSorting, genreFilters, platformFilters, setGenreFilters, setPlatformFilters } = useData().games;
 
     var filters = {
         Platforms: {

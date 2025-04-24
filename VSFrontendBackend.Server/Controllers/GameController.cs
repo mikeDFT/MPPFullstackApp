@@ -1,36 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
-using VSFrontendBackend.Server.Services;
 using VSFrontendBackend.Server.Domain;
-using System.Diagnostics;
-using System.Threading;
+using VSFrontendBackend.Server.Services;
+using System.Threading.Tasks;
 
 namespace VSFrontendBackend.Server.Controllers
 {
     [ApiController]
-    //[Route("[controller]")]
     [Route("game")]
     public class GameController : ControllerBase
     {
         private readonly IGameService _gameService;
-        private static int _instanceCount = 0;
-        private readonly int _instanceId;
 
         public GameController(IGameService gameService)
         {
-            _instanceId = Interlocked.Increment(ref _instanceCount);
-            //Debug.WriteLine($"GameController constructor called - Instance #{_instanceId}");
             _gameService = gameService;
         }
 
         [HttpGet(Name = "GameData")]
-        public IEnumerable<Game> Get([FromQuery] FilterSortingGamesParams filterSortingGamesParams)
+        public async Task<IEnumerable<Game>> Get([FromQuery] FilterSortingGamesParams filterSortingGamesParams)
         {
-            //Debug.WriteLine(filterSortingGamesParams.SortBy);
-            //Debug.WriteLine(filterSortingGamesParams.Ascending);
-            //Debug.WriteLine(filterSortingGamesParams.Genres!=null ? filterSortingGamesParams.Genres.Count : null);
-            //Debug.WriteLine(filterSortingGamesParams.Platforms!= null ? filterSortingGamesParams.Platforms.Count : null);
-            //Debug.WriteLine(filterSortingGamesParams.SearchText);
-
             if (filterSortingGamesParams.Platforms == null)
                 filterSortingGamesParams.Platforms = [];
 
@@ -40,41 +28,30 @@ namespace VSFrontendBackend.Server.Controllers
             filterSortingGamesParams.Platforms.RemoveAll((el) => el == null);
             filterSortingGamesParams.Genres.RemoveAll((el) => el == null);
 
-            //Debug.WriteLine(filterSortingGamesParams.Genres.Count);
-            //foreach (var genre in filterSortingGamesParams.Genres)
-            //    Debug.WriteLine("|" + genre + "|");
+            if (filterSortingGamesParams == null)
+                filterSortingGamesParams = new FilterSortingGamesParams();
 
-            var games = _gameService.GetAllAsync(filterSortingGamesParams);
-            //foreach(var g in games)
-            //    Debug.WriteLine(g.Name);
-
-            return games;
+            return await _gameService.GetAllAsync(filterSortingGamesParams);
         }
 
         [HttpGet("{id}", Name = "GetGameById")]
-        public Game Get(int id)
+        public async Task<Game> Get(int id)
         {
-            return _gameService.GetByIdAsync(id);
+            return await _gameService.GetByIdAsync(id);
         }
 
         [HttpPost(Name = "ModifyGame")]
-        public IActionResult Post(Game game)
+        public async Task<IActionResult> Post(Game game)
         {
-            _gameService.ModifyAsync(game);
-            return Ok(game);
+            var result = await _gameService.ModifyAsync(game);
+            return Ok(result);
         }
 
-        //[HttpPut("{id}", Name = "UpdateGame")]
-        //public void Put(int id, Game game)
-        //{
-        //    _gameService.UpdateAsync(game);
-        //}
-
         [HttpDelete("{id}", Name = "DeleteGame")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            _gameService.DeleteAsync(id);
+            await _gameService.DeleteAsync(id);
             return Ok(id);
         }
     }
- }
+}

@@ -1,11 +1,11 @@
 import {Button, ButtonGroup} from "react-bootstrap";
 import {useEffect, useState} from "react";
-import { useGameData } from "@/context/GameDataContext";
+import { useData } from "@/context/DataContext";
 import { DEFAULT_PLATFORMS, DEFAULT_GENRES } from "@/utils/GenresPlatforms.jsx";
 import { useNavigate } from "react-router-dom";
 
 export function ModifyDetails({ gameData }) {
-    const { actions } = useGameData();
+    const { actions } = useData().games;
     const navigate = useNavigate();
 
     var formFields = [

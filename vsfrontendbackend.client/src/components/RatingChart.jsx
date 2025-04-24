@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useGameData } from "@/context/GameDataContext";
+import { useData } from "@/context/DataContext";
 
 export function RatingChart() {
-	const { gamesInfo } = useGameData();
-	
+	const { gamesInfo } = useData().games;
+
 	// state for storing the processed data
 	const [chartData, setChartData] = useState({
 		"1-2": 0,

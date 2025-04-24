@@ -1,57 +1,64 @@
-﻿using VSFrontendBackend.Server.Domain;
+﻿using Microsoft.EntityFrameworkCore;
+using VSFrontendBackend.Server.Domain;
+using VSFrontendBackend.Server.Utils;
 
-namespace VSFrontendBackend.Server.Repository
+namespace VSFrontendBackend.Server.Repository;
+
+public interface ICompanyRepository
 {
-	public interface ICompanyRepository
+	Task<List<Company>> GetAllAsync();
+	Task<Company> GetByIdAsync(int id);
+	Task<Company> AddAsync(Company company);
+	Task<Company> UpdateAsync(Company company);
+	Task DeleteAsync(int id);
+}
+
+public class CompanyRepository : ICompanyRepository
+{
+	private readonly AppDbContext _context;
+	public List<Company> CachedCompanies { get; set; } = new List<Company>();
+
+    public CompanyRepository(AppDbContext context)
 	{
-		List<Company> GetAllAsync();
-		Company GetByIdAsync(int id);
-		Company AddAsync(Company company);
-		Company UpdateAsync(Company company);
-		void DeleteAsync(int id);
+		_context = context;
 	}
 
-	public class CompanyRepository
+	public async Task<List<Company>> GetAllAsync()
 	{
-		private static List<Company> _companies = [
+		CachedCompanies = await _context.Companies.Include(c => c.Games).ToListAsync();
+		return CachedCompanies;
+    }
 
-		];
+	public async Task<Company> GetByIdAsync(int id)
+	{
+		var company = await _context.Companies
+			.Include(c => c.Games)
+			.FirstOrDefaultAsync(c => c.Id == id);
+			
+		return company ?? Company.emptyCompany;
+	}
 
-		public List<Company> GetAllAsync()
+	public async Task<Company> AddAsync(Company company)
+	{
+		await _context.Companies.AddAsync(company);
+		await _context.SaveChangesAsync();
+		return company;
+	}
+
+	public async Task<Company> UpdateAsync(Company company)
+	{
+		_context.Companies.Update(company);
+		await _context.SaveChangesAsync();
+		return company;
+	}
+
+	public async Task DeleteAsync(int id)
+	{
+		var company = await _context.Companies.FindAsync(id);
+		if (company != null)
 		{
-			return _companies;
-		}
-
-		public Company GetByIdAsync(int id)
-		{
-			var index = _companies.FindIndex(g => g.Id == id);
-			if (index != -1)
-			{
-				return _companies[index];
-			}
-
-			return Company.emptyCompany;
-		}
-
-		public Company AddAsync(Company company)
-		{
-			_companies.Add(company);
-			return company;
-		}
-
-		public Company UpdateAsync(Company company)
-		{
-			var index = _companies.FindIndex(g => g.Id == company.Id);
-			if (index != -1)
-			{
-				_companies[index] = company;
-			}
-			return company;
-		}
-
-		public void DeleteAsync(int id)
-		{
-			_companies.RemoveAll(g => g.Id == id);
+			_context.Companies.Remove(company);
+			await _context.SaveChangesAsync();
 		}
 	}
 }

@@ -1,8 +1,6 @@
-import Pagination from 'react-bootstrap/Pagination';
 import { Link } from 'react-router-dom';
 import React, { useState, useEffect, useRef } from 'react';
-import { UnitTestFilteringSortingSearch } from "@/tests/UnitTestFilteringSortingSearch.jsx";
-import { useGameData } from "@/context/GameDataContext";
+import { useData } from "@/context/DataContext";
 import { StatisticsForPrice } from "@/utils/StatisticsForPrice.jsx"
 
 import "@/css/pagination.css";
@@ -39,7 +37,9 @@ function sortGames(games, sortBy, ascending) {
 //}
 
 export function StoreList() {
-    const { gamesInfo, iconsIDToObjs, sorting } = useGameData();
+    const { gamesInfo, sorting } = useData().games;
+    const { iconsIDToObjs } = useData();
+
     const containerRef = useRef(null);
     const [visibleGames, setVisibleGames] = useState([]);
     const [visibleRange, setVisibleRange] = useState({ start: 0, end: ITEMS_PER_PAGE + (1+PAGES_TO_LOAD_BELOW)});
@@ -49,6 +49,7 @@ export function StoreList() {
     const scrollPositionRef = useRef(0);
     const isInitialLoadRef = useRef(true);
     
+
     // sort games whenever sorting changes
     useEffect(() => {
         const sorted = sortGames(gamesInfo, sorting.by, sorting.ascending);
@@ -63,6 +64,7 @@ export function StoreList() {
     
     // update visible games when visible range changes
     useEffect(() => {
+        console.log(sortedGames.slice(visibleRange.start, visibleRange.end))
         setVisibleGames(sortedGames.slice(visibleRange.start, visibleRange.end));
     }, [visibleRange, sortedGames]);
     
@@ -186,7 +188,7 @@ export function StoreList() {
                     <div style={{textAlign: "center", padding: "2rem"}}>
                         No games available
                     </div>
-                ) : (
+                ) : ( console.log(visibleGames.map((game) => game)),
                     visibleGames.map((game) => (
                         <div style={{display: "flex",
                             // justifyContent: "space-between",

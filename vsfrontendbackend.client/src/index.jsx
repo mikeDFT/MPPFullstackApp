@@ -12,12 +12,12 @@ import { NavigationButtomBar } from "./components/NavigationButtomBar.jsx";
 import MainPage from "./pages/MainPage.jsx";
 import ViewPage from "./pages/ViewPage.jsx";
 import ModifyPage from "./pages/ModifyPage.jsx";
-import { GameDataProvider } from "./context/GameDataContext";
+import { DataProvider } from "./context/DataContext";
 
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
-        <GameDataProvider>
+        <DataProvider>
             <Router>
                 <div style={{ display: "flex", flexDirection: "column" }}>
                     <NavigationTopBar />
@@ -30,6 +30,6 @@ createRoot(document.getElementById('root')).render(
                     <NavigationButtomBar />
                 </div>
             </Router>
-        </GameDataProvider>
+        </DataProvider>
     </StrictMode>
 )

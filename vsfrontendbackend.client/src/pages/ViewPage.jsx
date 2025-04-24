@@ -1,12 +1,12 @@
 import React from "react";
 import {GameDetails} from "@/components/GameDetails.jsx";
 import {useLocation} from "react-router-dom";
-import { useGameData } from "@/context/GameDataContext";
+import { useData } from "@/context/DataContext";
 import { apiService } from "@/services/apiService.js";
 import { useState, useEffect } from "react";
 
 function ViewPage() {
-    const { iconsIDToObjs } = useGameData();
+    const { iconsIDToObjs } = useData();
     const location = useLocation();
     
     const gameID = location.state?.gameID || null;
