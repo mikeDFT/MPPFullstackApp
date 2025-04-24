@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using VSFrontendBackend.Server.Services;
-using VSFrontendBackend.Server.Models;
+using VSFrontendBackend.Server.Domain;
 using System.Diagnostics;
 using System.Threading;
 

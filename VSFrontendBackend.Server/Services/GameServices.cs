@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using VSFrontendBackend.Server.Models;
+using VSFrontendBackend.Server.Domain;
 using VSFrontendBackend.Server.Repository;
 
 
