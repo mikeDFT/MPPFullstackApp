@@ -1,4 +1,4 @@
-using VSFrontendBackend.Server.Domain;
+using VSFrontendBackend.Server.Models;
 
 namespace VSFrontendBackend.Server.Repository;
 

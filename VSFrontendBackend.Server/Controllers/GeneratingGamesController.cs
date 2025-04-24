@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using VSFrontendBackend.Server.Domain;
+using VSFrontendBackend.Server.Models;
 using VSFrontendBackend.Server.Services;
 using VSFrontendBackend.Server.Utils;
 using Microsoft.Extensions.Hosting;

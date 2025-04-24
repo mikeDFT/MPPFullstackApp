@@ -179,8 +179,8 @@ if (typeof window !== 'undefined') {
 }
 
 export const apiService = {
-    // polling interval in milliseconds (4 seconds) - I will update the game list every 4 seconds
-    POLLING_INTERVAL: 4000,
+    // polling interval in milliseconds (10 seconds) - I will update the game list every 10 seconds
+    POLLING_INTERVAL: 10000,
     INITIAL_REFRESH_TIME: 300,
 
     // Fetch all games
