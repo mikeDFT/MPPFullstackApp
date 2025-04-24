@@ -111,6 +111,7 @@ namespace VSFrontendBackend.Server.Controllers
             }
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public async Task CleanupAllConnectionsAsync()
         {
             Debug.WriteLine("Cleaning up all WebSocket connections and tasks");
@@ -149,12 +150,14 @@ namespace VSFrontendBackend.Server.Controllers
             _generationTasks.Clear();
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         // keep this for backward compatibility
         public async Task CloseAllAsync()
         {
             await CleanupAllConnectionsAsync();
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         // implement IDisposable pattern
         public void Dispose()
         {
@@ -164,6 +167,7 @@ namespace VSFrontendBackend.Server.Controllers
             GC.SuppressFinalize(this);
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -180,7 +184,8 @@ namespace VSFrontendBackend.Server.Controllers
                 _disposed = true;
             }
         }
-
+        
+        [ApiExplorerSettings(IgnoreApi = true)]
         private async Task HandleWebSocketConnection(string connectionId, WebSocket webSocket)
         {
             Debug.WriteLine($"Starting to handle WebSocket connection for ID: {connectionId}");
@@ -320,6 +325,7 @@ namespace VSFrontendBackend.Server.Controllers
             }
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         private async Task StartGeneratingGames(string connectionId, WebSocket webSocket)
         {
             Debug.WriteLine($"Starting game generation for connection ID: {connectionId}");
@@ -460,6 +466,7 @@ namespace VSFrontendBackend.Server.Controllers
             }
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         private async Task StopGeneratingGames(string connectionId)
         {
             Debug.WriteLine($"Stopping game generation for connection ID: {connectionId}");
@@ -488,6 +495,7 @@ namespace VSFrontendBackend.Server.Controllers
             }
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         private async Task HandlePing(string connectionId, WebSocket webSocket)
         {
             Debug.WriteLine($"Ping received from connection ID: {connectionId}");

@@ -8,7 +8,7 @@ import child_process from 'child_process';
 import { env } from 'process';
 
 // Import configuration
-import { SERVER_IP, SERVER_HTTP_PORT, SERVER_HTTPS_PORT, CLIENT_PORT } from './src/config.js';
+import { SERVER_IP, SERVER_HTTP_PORT, CLIENT_PORT } from './src/config.js';
 
 const baseFolder =
     env.APPDATA !== undefined && env.APPDATA !== ''
@@ -38,7 +38,7 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
 }
 
 const target = env.ASPNETCORE_HTTPS_PORT ? `http://${SERVER_IP}:${CLIENT_PORT}/:${env.ASPNETCORE_HTTPS_PORT}` :
-    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : `http://${SERVER_IP}:${CLIENT_PORT}/:${SERVER_HTTPS_PORT}`;
+    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : `http://${SERVER_IP}:${CLIENT_PORT}/:${SERVER_HTTP_PORT}`;
 
 // https://vitejs.dev/config/
 export default defineConfig({

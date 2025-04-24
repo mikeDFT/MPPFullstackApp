@@ -17,8 +17,7 @@ The main configuration file is located at `vsfrontendbackend.client/src/config.j
 - `SERVER_IP`: The IP address of the server (default: '192.168.40.178')
 
 ### Server Ports
-- `SERVER_HTTP_PORT`: The HTTP port for the server (default: '5048')
-- `SERVER_HTTPS_PORT`: The HTTPS port for the server (default: '7299')
+- `SERVER_HTTP_PORT`: The HTTP port for the server (default: '7299')
 - `SERVER_IIS_PORT`: The IIS port for the server (default: '33367')
 
 ### Protocol Configuration
@@ -34,8 +33,7 @@ The `launchSettings.json` file now includes environment variables that can be ac
   "ASPNETCORE_ENVIRONMENT": "Development",
   "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy",
   "SERVER_IP": "192.168.10.160",
-  "SERVER_HTTP_PORT": "5048",
-  "SERVER_HTTPS_PORT": "7299",
+  "SERVER_HTTP_PORT": "7299",
   "SERVER_IIS_PORT": "33367",
   "CLIENT_PORT": "53392"
 }
@@ -93,7 +91,7 @@ You should also update the server configuration files:
 
 1. In `Properties/launchSettings.json`:
    ```json
-   "applicationUrl": "http://192.168.1.100:5048",
+   "applicationUrl": "http://192.168.1.100:7299",
    "environmentVariables": {
      "SERVER_IP": "192.168.1.100"
    }
@@ -101,5 +99,5 @@ You should also update the server configuration files:
 
 2. In `VSFrontendBackend.Server.http`:
    ```
-   @VSFrontendBackend.Server_HostAddress = http://192.168.1.100:5048
+   @VSFrontendBackend.Server_HostAddress = http://192.168.1.100:7299
    ``` 

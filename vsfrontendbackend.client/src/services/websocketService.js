@@ -2,7 +2,7 @@
 let instanceCounter = 0;
 
 // Import configuration
-import { SERVER_IP, SERVER_HTTPS_PORT, WSS_URL } from '../config';
+import { SERVER_IP, SERVER_HTTP_PORT } from '../config';
 
 // WebSocket service to handle all WebSocket connections and logic
 class WebSocketService {
@@ -56,7 +56,7 @@ class WebSocketService {
 			// The server is running on the configured IP and port
 			// Use the same protocol as the current page (ws or wss)
 			const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-			const wsUrl = `${protocol}//${SERVER_IP}:${SERVER_HTTPS_PORT}/api/GeneratingGames/ws`;
+			const wsUrl = `${protocol}//${SERVER_IP}:${SERVER_HTTP_PORT}/api/GeneratingGames/ws`;
 			console.log('Connecting to WebSocket:', wsUrl);
 			
 			this.ws = new WebSocket(wsUrl);

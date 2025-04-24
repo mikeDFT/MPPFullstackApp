@@ -63,6 +63,9 @@ builder.Services.AddWebSockets(options =>
     options.KeepAliveInterval = TimeSpan.FromSeconds(30); // Shorter interval for more reliable connection
 });
 
+Debug.WriteLine("!!!!!!!!!!!!!!");
+Debug.WriteLine(Environment.GetEnvironmentVariable("SERVER_HTTP_PORT"));
+
 // Add CORS with a more permissive policy for development
 builder.Services.AddCors(options =>
 {
@@ -73,11 +76,11 @@ builder.Services.AddCors(options =>
             $"http://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.160"}:{Environment.GetEnvironmentVariable("CLIENT_PORT") ?? "53392"}";
         
         // Get server URL from environment variables or use default
-        string serverUrl = $"http://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.160"}:{Environment.GetEnvironmentVariable("SERVER_HTTPS_PORT") ?? "7299"}";
+        string serverUrl = $"http://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.160"}:{Environment.GetEnvironmentVariable("SERVER_HTTP_PORT") ?? "7299"}";
         
         // Add WebSocket URL
-        string wsUrl = $"ws://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.160"}:{Environment.GetEnvironmentVariable("SERVER_HTTPS_PORT") ?? "7299"}";
-        string wssUrl = $"wss://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.160"}:{Environment.GetEnvironmentVariable("SERVER_HTTPS_PORT") ?? "7299"}";
+        string wsUrl = $"ws://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.160"}:{Environment.GetEnvironmentVariable("SERVER_HTTP_PORT") ?? "7299"}";
+        string wssUrl = $"wss://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.160"}:{Environment.GetEnvironmentVariable("SERVER_HTTP_PORT") ?? "7299"}";
         
         builder.WithOrigins(clientUrl, serverUrl, wsUrl, wssUrl)
                .AllowAnyHeader()

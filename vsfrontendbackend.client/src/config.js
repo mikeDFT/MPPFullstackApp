@@ -2,8 +2,7 @@
 export const SERVER_IP = '192.168.10.160';
 
 // Server ports
-export const SERVER_HTTP_PORT = '5048';
-export const SERVER_HTTPS_PORT = '7299';
+export const SERVER_HTTP_PORT = '7299';
 export const SERVER_IIS_PORT = '33367';
 
 // Client ports
@@ -17,10 +16,9 @@ export const WSS_PROTOCOL = 'wss';
 
 // Constructed URLs
 export const SERVER_HTTP_URL = `${HTTP_PROTOCOL}://${SERVER_IP}:${SERVER_HTTP_PORT}`;
-export const SERVER_HTTPS_URL = `${HTTPS_PROTOCOL}://${SERVER_IP}:${SERVER_HTTPS_PORT}`;
 export const SERVER_IIS_URL = `${HTTP_PROTOCOL}://${SERVER_IP}:${SERVER_IIS_PORT}`;
 export const CLIENT_URL = `${HTTP_PROTOCOL}://${SERVER_IP}:${CLIENT_PORT}`;
 
 // WebSocket URLs
-export const WS_URL = `${WS_PROTOCOL}://${SERVER_IP}:${SERVER_HTTPS_PORT}`;
-export const WSS_URL = `${WSS_PROTOCOL}://${SERVER_IP}:${SERVER_HTTPS_PORT}`; 
+export const WS_URL = `${WS_PROTOCOL}://${SERVER_IP}:${SERVER_HTTP_PORT}`;
+export const WSS_URL = `${WSS_PROTOCOL}://${SERVER_IP}:${SERVER_HTTP_PORT}`; 
