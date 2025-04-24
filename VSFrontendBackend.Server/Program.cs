@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Diagnostics;
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+using System;
+using VSFrontendBackend.Server.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -88,6 +91,10 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     // This preserves the property names exactly as defined in the C# models
     options.JsonSerializerOptions.PropertyNamingPolicy = null;
 });
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 var app = builder.Build();
 

@@ -61,6 +61,26 @@ To update the server configuration, you need to manually update the following fi
 1. `Properties/launchSettings.json`: Update the `applicationUrl` values and environment variables
 2. `VSFrontendBackend.Server.http`: Update the `@VSFrontendBackend.Server_HostAddress` value
 
+## appsettings.json
+
+Create a file called appsettings.json in VSFrontendBackend.Server with the following:
+
+```{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=.;Database=MyAppDb;Trusted_Connection=True;"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}
+```
+Change the "DefaultConnection" to your SQL Server database connection string
+
+
 ## Example
 
 If you change the server IP address in `vsfrontendbackend.client/src/config.js`:
