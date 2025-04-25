@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using VSFrontendBackend.Server.Domain;
 
 namespace VSFrontendBackend.Server.Utils
@@ -12,11 +13,13 @@ namespace VSFrontendBackend.Server.Utils
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Configure the relationship
             modelBuilder.Entity<Game>()
                 .HasOne(game => game.Company)
                 .WithMany(company => company.Games)
                 .HasForeignKey(game => game.CompanyID)
-                .OnDelete(DeleteBehavior.Cascade);
+                .IsRequired(false)  // Make FK optional
+                .OnDelete(DeleteBehavior.SetNull);  // Change to SetNull instead of Cascade
         }
     }
 }

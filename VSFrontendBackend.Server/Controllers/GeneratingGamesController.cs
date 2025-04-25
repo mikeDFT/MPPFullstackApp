@@ -5,10 +5,12 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using VSFrontendBackend.Server.Domain;
+using VSFrontendBackend.Server.Domain.DTOs;
 using VSFrontendBackend.Server.Services;
 using VSFrontendBackend.Server.Utils;
 using Microsoft.Extensions.Hosting;
@@ -30,6 +32,7 @@ namespace VSFrontendBackend.Server.Controllers
         private readonly int _instanceId;
 		private readonly IHostApplicationLifetime _appLifetime;
 		private bool _disposed = false;
+        private readonly JsonSerializerOptions _jsonOptions = JsonConfig.DefaultOptions;
 
         public GeneratingGamesController(IGameService gameService, IHostApplicationLifetime appLifetime, CompanyRepository companyRepository)
         {
@@ -376,14 +379,15 @@ namespace VSFrontendBackend.Server.Controllers
                             // Update our local list
                             gamesList = await _gameService.GetAllAsync(filterParams);
 
-                            // Send the new game to the client
-                            var gameJson = JsonSerializer.Serialize(addedGame);
+                            // Convert Game entity to GameDTO before sending
+                            var gameDto = GameDTO.FromGame(addedGame);
+                            var gameJson = JsonSerializer.Serialize(gameDto, _jsonOptions);
                             var message = new WebSocketMessage
                             {
                                 action = "newGame",
                                 data = gameJson
                             };
-                            var messageJson = JsonSerializer.Serialize(message);
+                            var messageJson = JsonSerializer.Serialize(message, _jsonOptions);
                             var messageBytes = Encoding.UTF8.GetBytes(messageJson);
 
                             // Check if the connection is still active and open before sending
@@ -449,7 +453,7 @@ namespace VSFrontendBackend.Server.Controllers
                 action = "started",
                 data = "Game generation started"
             };
-            var responseJson = JsonSerializer.Serialize(response);
+            var responseJson = JsonSerializer.Serialize(response, _jsonOptions);
             var responseBytes = Encoding.UTF8.GetBytes(responseJson);
             
             try
@@ -486,7 +490,7 @@ namespace VSFrontendBackend.Server.Controllers
                         action = "stopped",
                         data = "Game generation stopped"
                     };
-                    var responseJson = JsonSerializer.Serialize(response);
+                    var responseJson = JsonSerializer.Serialize(response, _jsonOptions);
                     var responseBytes = Encoding.UTF8.GetBytes(responseJson);
                     await webSocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
                     Debug.WriteLine($"Sent stop confirmation to client for connection ID: {connectionId}");
@@ -512,7 +516,7 @@ namespace VSFrontendBackend.Server.Controllers
                         action = "pong",
                         data = "Server is alive"
                     };
-                    var responseJson = JsonSerializer.Serialize(response);
+                    var responseJson = JsonSerializer.Serialize(response, _jsonOptions);
                     var responseBytes = Encoding.UTF8.GetBytes(responseJson);
                     await webSocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
                     Debug.WriteLine($"Pong sent to client for connection ID: {connectionId}");

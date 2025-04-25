@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using VSFrontendBackend.Server.Domain;
+using VSFrontendBackend.Server.Domain.DTOs;
 using VSFrontendBackend.Server.Services;
+using VSFrontendBackend.Server.Utils;
 using System.Threading.Tasks;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace VSFrontendBackend.Server.Controllers
 {
@@ -17,7 +21,7 @@ namespace VSFrontendBackend.Server.Controllers
         }
 
         [HttpGet(Name = "GameData")]
-        public async Task<IEnumerable<Game>> Get([FromQuery] FilterSortingGamesParams filterSortingGamesParams)
+        public async Task<IActionResult> Get([FromQuery] FilterSortingGamesParams filterSortingGamesParams)
         {
             if (filterSortingGamesParams.Platforms == null)
                 filterSortingGamesParams.Platforms = [];
@@ -31,20 +35,26 @@ namespace VSFrontendBackend.Server.Controllers
             if (filterSortingGamesParams == null)
                 filterSortingGamesParams = new FilterSortingGamesParams();
 
-            return await _gameService.GetAllAsync(filterSortingGamesParams);
+            var games = await _gameService.GetAllAsync(filterSortingGamesParams);
+            var gameDTOs = GameDTO.FromGameList(games);
+            return Ok(gameDTOs);
         }
 
         [HttpGet("{id}", Name = "GetGameById")]
-        public async Task<Game> Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            return await _gameService.GetByIdAsync(id);
+            var game = await _gameService.GetByIdAsync(id);
+            var gameDTO = GameDTO.FromGame(game);
+            return Ok(gameDTO);
         }
 
         [HttpPost(Name = "ModifyGame")]
-        public async Task<IActionResult> Post(Game game)
+        public async Task<IActionResult> Post(GameDTO gameDTO)
         {
+            var game = gameDTO.ToGame();
             var result = await _gameService.ModifyAsync(game);
-            return Ok(result);
+            var resultDTO = GameDTO.FromGame(result);
+            return Ok(resultDTO);
         }
 
         [HttpDelete("{id}", Name = "DeleteGame")]

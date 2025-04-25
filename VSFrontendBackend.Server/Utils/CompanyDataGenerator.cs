@@ -55,21 +55,23 @@ namespace VSFrontendBackend.Server.Utils
         // Logo IDs
         private static readonly List<string> randomLogoIds = new List<string>
         {
-            "BlizzardLogo",
-            "ValveLogo",
-            "EALogo",
-            "UbisoftLogo",
-            "ActivisionLogo",
-            "RockstarLogo",
-            "CDProjektLogo",
-            "BethesdaLogo",
-            "NaughtyDogLogo",
-            "EpicLogo",
-            "CapcomLogo",
-            "SquareEnixLogo",
-            "BiowareLogo",
-            "FromSoftwareLogo",
-            "InsomniacLogo"
+            //"",
+            "ROR2Icon",
+            "DBDIcon",
+            "Portal2Icon",
+            "DeadCellsIcon",
+            "NMSIcon",
+            "AmogusIcon",
+            "DuolingoIcon",
+            "DarkNDIcon",
+            "DeathsDoorIcon",
+            "KillKnightIcon",
+            "LethalCompIcon",
+            "REPOIcon",
+            "SuperHotIcon",
+            "PalworldIcon",
+            "SlayTheSpireIcon",
+            "BPMIcon"
         };
 
         private static readonly Random Random = new Random();

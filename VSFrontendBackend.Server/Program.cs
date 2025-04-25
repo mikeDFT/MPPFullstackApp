@@ -43,6 +43,9 @@ string fileStoragePath = Path.Combine(Directory.GetCurrentDirectory(), "FileStor
 builder.Services.AddSingleton<IFilesRepository>(new FilesRepository(fileStoragePath));
 builder.Services.AddSingleton<IFilesService, FilesService>();
 
+// Change this line from AddSingleton to AddScoped
+builder.Services.AddScoped<VSFrontendBackend.Server.Repository.CompanyRepository>();
+
 // Configure request size limits for the entire application
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
@@ -93,6 +96,22 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     // This preserves the property names exactly as defined in the C# models
     options.JsonSerializerOptions.PropertyNamingPolicy = null;
 });
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+        options.JsonSerializerOptions.MaxDepth = 10;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

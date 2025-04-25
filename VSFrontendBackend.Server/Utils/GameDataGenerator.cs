@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using VSFrontendBackend.Server.Domain;
@@ -107,8 +108,13 @@ namespace VSFrontendBackend.Server.Utils
             var selectedGenres = GetRandomItems(DefaultGenres, 2, 4);
             var selectedPlatforms = GetRandomItems(DefaultPlatforms, 2, 4);
 
-            var cachedCompanies = companyRepository.CachedCompanies;
-            var selectedCompany = cachedCompanies[Random.Next(0, cachedCompanies.Count)];
+            companyRepository.GetAllAsync().Wait();
+            List<Company> cachedCompanies = companyRepository.CachedCompanies;
+            var selectedCompany = cachedCompanies.Count > 0 ? cachedCompanies[Random.Next(0, cachedCompanies.Count)] : Company.emptyCompany;
+
+            Debug.WriteLine("CREATING GAME:");
+            Debug.WriteLine("Company:");
+            Debug.WriteLine(selectedCompany.Id);
 
             return new Game
             {
