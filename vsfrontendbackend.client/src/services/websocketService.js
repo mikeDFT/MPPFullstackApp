@@ -139,6 +139,7 @@ class WebSocketService {
 					
 					// Call the appropriate handler for this message type
 					const handler = this.messageHandlers.get(message.action);
+					console.log('Handler for message type:', message.action, handler);
 					if (handler) {
 						handler(message);
 					} else {

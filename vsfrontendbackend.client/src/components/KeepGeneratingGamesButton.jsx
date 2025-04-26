@@ -33,7 +33,19 @@ export function KeepGeneratingGamesButton() {
 			// Parse and add the game to the context
 			try {
 				if (message.data) {
-					const newGame = JSON.parse(message.data);
+					var newGame = JSON.parse(message.data);
+					newGame = { // converting to the expected format
+						Id: newGame.id,
+						Name: newGame.name,
+						Price: newGame.price,
+						Description: newGame.description,
+						IconID: newGame.iconID,
+						Rating: newGame.rating,
+						Genres: newGame.genres,
+						Platforms: newGame.platforms,
+						CompanyID: newGame.companyID,
+						CompanyName: newGame.companyName
+					  };
 					if (newGame && actions && actions.modifyGame) {
 						actions.modifyGame(newGame);
 						console.log('Game added to context:', newGame.Name);
