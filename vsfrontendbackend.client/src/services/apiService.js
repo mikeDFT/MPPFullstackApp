@@ -204,7 +204,19 @@ export const apiService = {
 
             const queryString = queryParams.toString();
             const response = await fetch(`${API_BASE_URL}/game?${queryString}`);
-            return await handleResponse(response);
+            var games = await handleResponse(response);
+            return games.map(game => ({
+                Id: game.id,
+                Name: game.name,
+                Price: game.price,
+                Description: game.description,
+                IconID: game.iconID,
+                Rating: game.rating,
+                Genres: game.genres,
+                Platforms: game.platforms,
+                CompanyID: game.companyID,
+                CompanyName: game.companyName
+            }));
         };
 
         try {
@@ -226,7 +238,19 @@ export const apiService = {
     getGame: async (id) => {
         const executeRequest = async () => {
             const response = await fetch(`${API_BASE_URL}/game/${id}`);
-            return await handleResponse(response);
+            var game = await handleResponse(response);
+            return {
+                Id: game.id,
+                Name: game.name,
+                Price: game.price,
+                Description: game.description,
+                IconID: game.iconID,
+                Rating: game.rating,
+                Genres: game.genres,
+                Platforms: game.platforms,
+                CompanyID: game.companyID,
+                CompanyName: game.companyName
+            };
         };
 
         try {

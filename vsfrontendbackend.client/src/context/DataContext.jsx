@@ -59,20 +59,10 @@ export function DataProvider({ children }) {
                 platforms: platformFilters,
                 searchText: searchText
             });
+            console.log("Fetched games:", games);
 
             if (isMounted.current) {
-                setGamesInfo(games.map(game => ({
-                    CompanyID: game.companyID,
-                    CompanyName: game.companyName,
-                    Description: game.description,
-                    Genres: game.genres,
-                    IconID: game.iconID,
-                    Id: game.id,
-                    Name: game.name,
-                    Platforms: game.platforms,
-                    Price: game.price,
-                    Rating: game.rating
-                })));
+                setGamesInfo(games);
             }
         } catch (error) {
             console.error('Error fetching games:', error);

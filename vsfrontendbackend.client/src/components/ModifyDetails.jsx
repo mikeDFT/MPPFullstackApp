@@ -61,10 +61,14 @@ export function ModifyDetails({ gameData }) {
         },
     ]
 
+    formFields.map((field) => {console.log(field.fieldName, field.useStateList[0])})
+
     // Initialize form with existing game data - only run once when component mounts or gameData changes
     useEffect(() => {
         for (var i = 0; i < formFields.length; i++) {
             var formFieldDict = formFields[i];
+            if (gameData[formFieldDict.fieldName] === undefined)
+                continue
             formFieldDict.useStateList[1](gameData[formFieldDict.fieldName])
         }
     }, [gameData]); // Add gameData as a dependency to only run when it changes
@@ -161,8 +165,8 @@ export function ModifyDetails({ gameData }) {
                             {field.type === "textarea"
                                 ? <>
                                     <textarea className="form-control formDiv" id="floatingInput"
-                                              placeholder={field.fieldName} value={field.useStateList[0] || null}
-                                              onChange={(event) => {field.useStateList[1](event.target.value)}}
+                                              placeholder={field.fieldName} value={field.useStateList[0]}
+                                              onChange={(event) => {event.target.value && field.useStateList[1](event.target.value)}}
                                     />
                                     <label htmlFor="floatingInput" className="formLabel">{field.fieldName}</label>
                                 </>
@@ -170,7 +174,7 @@ export function ModifyDetails({ gameData }) {
                                     ? <>
                                         <ButtonGroup aria-label={field.fieldName}>
                                             { field.buttonGroupOptions.map(option => (
-                                                <Button key={option} variant="dark" active={field.useStateList[0].includes(option)}
+                                                <Button key={option} variant="dark" active={field.useStateList[0] && field.useStateList[0].includes(option)}
                                                     onClick={() => updateButtonGroupSelected(field.useStateList, option)}>
                                                     {option}
                                                 </Button>
@@ -179,8 +183,8 @@ export function ModifyDetails({ gameData }) {
                                     </>
                                     : <>
                                         <input type={field.type} className="form-control formDiv" id="floatingInput"
-                                               placeholder={field.fieldName} value={field.useStateList[0] || null}
-                                               onChange={(event) => {field.useStateList[1](event.target.value)}}
+                                               placeholder={field.fieldName} value={field.useStateList[0]}
+                                               onChange={(event) => {event.target.value && field.useStateList[1](event.target.value)}}
                                         />
                                         <label htmlFor="floatingInput" className="formLabel">{field.fieldName}</label>
                                     </>

@@ -25,17 +25,6 @@ function sortGames(games, sortBy, ascending) {
     else return gamesCopy;
 }
 
-//function unitTestData(gamesInfo, filterFunction, filters, sorting, searchText) {
-//    console.log("SharedGamesInfo:", gamesInfo)
-//    UnitTestFilteringSortingSearch(gamesInfo, filterFunction(filters), filters, sorting, searchText);
-//    var _filters = ["PC", "Xbox", "COOP"]
-//    UnitTestFilteringSortingSearch(gamesInfo, filterFunction(_filters), _filters, sorting, searchText)
-//    _filters = ["PC", "Roguelike"]
-//    UnitTestFilteringSortingSearch(gamesInfo, filterFunction(_filters), _filters, sorting, searchText)
-
-//    console.log("ALL TESTS PASSED")
-//}
-
 export function StoreList() {
     const { gamesInfo, sorting } = useData().games;
     const { iconsIDToObjs } = useData();
@@ -64,7 +53,6 @@ export function StoreList() {
     
     // update visible games when visible range changes
     useEffect(() => {
-        console.log(sortedGames.slice(visibleRange.start, visibleRange.end))
         setVisibleGames(sortedGames.slice(visibleRange.start, visibleRange.end));
     }, [visibleRange, sortedGames]);
     

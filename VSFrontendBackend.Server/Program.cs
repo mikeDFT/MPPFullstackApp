@@ -35,8 +35,10 @@ builder.Services.Configure<IISServerOptions>(options =>
 // Making the repositories using ER and services available for dependency injection
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
+builder.Services.AddScoped<ILogRepository, LogRepository>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<ILogService, LogService>();
 
 // Register file services
 string fileStoragePath = Path.Combine(Directory.GetCurrentDirectory(), "FileStorage");

@@ -24,7 +24,7 @@ function ModifyPage() {
 
 			// Try to get data from API first
 			try {
-				const data = await apiService.getGame(gameID);
+				var data = await apiService.getGame(gameID);
 				setGameData(data);
 				return;
 			} catch (apiError) {
