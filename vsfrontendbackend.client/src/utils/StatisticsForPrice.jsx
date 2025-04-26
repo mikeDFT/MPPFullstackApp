@@ -1,6 +1,9 @@
 
 export function StatisticsForPrice(gamesInfo) {
-    var sortedGames = gamesInfo.sort((a, b) => {return a.Price - b.Price;})
+    var sortedGames = [...gamesInfo]
+    sortedGames.sort((a, b) => {return a.Price - b.Price;})
+
+    console.log("SortedStats", sortedGames)
 
     var nrGames = sortedGames.length / 3
     var out = {}
@@ -8,12 +11,14 @@ export function StatisticsForPrice(gamesInfo) {
         const game = sortedGames[i];
 
         if (i < nrGames)
-            out[game.ID] = "$"
+            out[game.Id] = "$"
         else if (i < nrGames*2)
-            out[game.ID] = "$$"
+            out[game.Id] = "$$"
         else
-            out[game.ID] = "$$$";
+            out[game.Id] = "$$$";
     }
+
+    console.log("StatisticsForPrice", out)
 
     return out
 }

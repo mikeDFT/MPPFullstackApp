@@ -228,7 +228,7 @@ export function StoreList() {
                             </div>
                             <div style={{padding: "1rem", marginLeft: "auto"}}>
                                 <h5 style={{color: "#A6FF00"}}> ${game.Price} </h5>
-                                <h5 style={{color: "#A6FF00", float: "right"}}>{priceStatistics[game.ID]}</h5>
+                                <h5 style={{color: "#A6FF00", float: "right"}}>{priceStatistics[game.Id]}</h5>
                             </div>
                         </div>
                     ))
