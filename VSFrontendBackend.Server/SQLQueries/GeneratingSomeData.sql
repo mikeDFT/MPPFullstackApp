@@ -4,6 +4,10 @@ SELECT * FROM __EFMigrationsHistory
 SELECT * FROM Games
 SELECT * FROM Companies
 
+SELECT * FROM LogEntries
+WHERE ActionType='DeleteGame'
+ORDER BY [Timestamp]
+
 -- Add Companies
 INSERT INTO Companies (CompanyName, NetWorth, LogoID, Description)
 VALUES 
