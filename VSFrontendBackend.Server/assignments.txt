@@ -25,11 +25,12 @@ gold:
  */
 
  /*
- assignment 2:
- bronze:
+assignment 2: backend
+ 
+bronze:
 	backend filtering, sorting and unit tests with coverage
 
- silver:
+silver:
 	frontend detecteaza ca:
 		reteaua pica / serverul a picat - arata fiecare cu ceva diferit -> pot sa le fac sa mearga frontend/backend pe 2 masini diferite
 		cu offline support, stochez temporar pe localstorage - la filtering, sorting etc nu merge cat serverul a picat
@@ -42,4 +43,14 @@ gold:
 	
  */
 
- 
+/*
+assignment 3: databases
+
+bronze:
+	connect to a database and have data persistence
+	create a new domain entity to have a 1:n relationship
+	log everything that happens on the backend (requests and actions) in the database
+
+*/
+
+
