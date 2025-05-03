@@ -21,13 +21,8 @@ export function SearchBar() {
             borderRadius: "1em",
             color: "white",
             padding: ".2rem",
-            display: "flex",
-            justifyContent: "space-between",
         }}>
 
-            <button onClick={menuClicked} className="searchBarButton">
-                <IoMenu/>
-            </button>
             <FloatingLabel
                 controlId="floatingInput"
                 label="Search"
@@ -44,9 +39,6 @@ export function SearchBar() {
                            color: "white",
                        }}/>
             </FloatingLabel>
-            <button onClick={searchClicked} className="searchBarButton">
-                <IoIosSearch/>
-            </button>
         </div>
     )
 }

@@ -7,4 +7,5 @@ public class FilterSortingGamesParams
     public List<string>? Platforms { get; set; }
     public string? SortBy { get; set; }  // "price", "rating", "name"
     public bool Ascending { get; set; }
+    public string? CompanySearchText { get; set; }
 }

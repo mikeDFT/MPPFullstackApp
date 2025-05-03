@@ -194,6 +194,7 @@ export function StoreList() {
                             <div style={{padding: "1rem"}}>
                                 <h5>{game.Name}</h5>
                                 <h6 style={{color: "rgba(255, 255, 255, 0.6)"}}>{game.Rating}/5 stars</h6>
+                                <h6 style={{color: "rgba(255, 255, 255, 0.6)", fontSize: "0.8rem"}}>By {game.CompanyName}</h6>
                                 <div style={{margin: "2.5rem 0 0 0"}}>
                                     <Link to={"/view"} state={{ gameID: game.Id }} className={"gameButton"}>
                                         <button className={"gameButton viewGameButton"}>

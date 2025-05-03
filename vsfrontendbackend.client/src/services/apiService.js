@@ -191,6 +191,8 @@ export const apiService = {
             if (params.sortBy) queryParams.append('SortBy', params.sortBy);
             if (params.ascending !== undefined) queryParams.append('Ascending', params.ascending);
             if (params.searchText) queryParams.append('SearchText', params.searchText);
+            console.log("Company search text:", params.companySearchText);
+            if (params.companySearchText) queryParams.append('CompanySearchText', params.companySearchText);
             if (params.genres) {
                 for (var genre of params.genres) {
                     queryParams.append('Genres', genre);

@@ -30,6 +30,12 @@ public class GameService : IGameService
             games = games.Where(g => g.Name.Contains(filterSortingGamesParams.SearchText, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
+        Debug.WriteLine("CompanySearchText: " + filterSortingGamesParams.CompanySearchText);
+        if (filterSortingGamesParams.CompanySearchText != null)
+        {
+            games = games.Where(g => g.Company.CompanyName.Contains(filterSortingGamesParams.CompanySearchText, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
         if (filterSortingGamesParams.Genres != null)
         {
             foreach (var genre in filterSortingGamesParams.Genres)

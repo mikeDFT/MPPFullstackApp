@@ -36,6 +36,8 @@ namespace VSFrontendBackend.Server.Controllers
                 if (filterSortingGamesParams.Genres == null)
                     filterSortingGamesParams.Genres = [];
 
+                filterSortingGamesParams.CompanySearchText ??= string.Empty;
+
                 filterSortingGamesParams.Platforms.RemoveAll((el) => el == null);
                 filterSortingGamesParams.Genres.RemoveAll((el) => el == null);
 

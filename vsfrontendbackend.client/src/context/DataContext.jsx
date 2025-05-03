@@ -52,12 +52,14 @@ export function DataProvider({ children }) {
         if (!isMounted.current) return;
         
         try {
+            console.log(companySearchText);
             const games = await apiService.getAllGames({
                 sortBy: sorting.by,
                 ascending: sorting.ascending,
                 genres: genreFilters,
                 platforms: platformFilters,
-                searchText: searchText
+                searchText: searchText,
+                companySearchText: companySearchText
             });
             console.log("Fetched games:", games);
 
@@ -67,7 +69,7 @@ export function DataProvider({ children }) {
         } catch (error) {
             console.error('Error fetching games:', error);
         }
-    }, [sorting, genreFilters, platformFilters, searchText]);
+    }, [sorting, genreFilters, platformFilters, searchText, companySearchText]);
     
     // Fetch companies with current filtering state
     const fetchCompaniesWithCurrentState = useCallback(async () => {
