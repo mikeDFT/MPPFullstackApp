@@ -1,72 +1,105 @@
 import { Link } from 'react-router-dom';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useData } from "@/context/DataContext";
-import { StatisticsForPrice } from "@/utils/StatisticsForPrice.jsx"
+import { StatisticsForPrice } from "@/utils/StatisticsForPrice.jsx";
+import { apiService } from '@/services/apiService';
 
 import "@/css/pagination.css";
 
-// constants for infinite scrolling
+// Constants for pagination
 const ITEMS_PER_PAGE = 3;
-const PAGES_TO_LOAD_BELOW = 2;
-
-function sortGames(games, sortBy, ascending) {
-    // Create a copy of the array to avoid mutating the original
-    const gamesCopy = [...games];
-    
-    const direction = ascending ? 1 : -1;
-    
-    if (sortBy === "Name") {
-        return gamesCopy.sort((a, b) => direction * a.Name.localeCompare(b.Name));
-    } else if (sortBy === "Price") {
-        return gamesCopy.sort((a, b) => direction * (a.Price - b.Price));
-    } else if (sortBy === "Rating") {
-        return gamesCopy.sort((a, b) => direction * (a.Rating - b.Rating));
-    }
-    else return gamesCopy;
-}
 
 export function StoreList() {
-    const { gamesInfo, sorting } = useData().games;
+    const { sorting, filters } = useData().games;
     const { iconsIDToObjs } = useData();
 
     const containerRef = useRef(null);
-    const [visibleGames, setVisibleGames] = useState([]);
-    const [visibleRange, setVisibleRange] = useState({ start: 0, end: ITEMS_PER_PAGE + (1+PAGES_TO_LOAD_BELOW)});
-    const [sortedGames, setSortedGames] = useState([]);
+    const [games, setGames] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const priceStatistics = StatisticsForPrice(gamesInfo);
+    const [loadError, setLoadError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pagination, setPagination] = useState({
+        totalCount: 0,
+        pageNumber: 1,
+        pageSize: ITEMS_PER_PAGE,
+        totalPages: 1,
+        hasNext: false,
+        hasPrevious: false
+    });
+    
     const scrollPositionRef = useRef(0);
-    const isInitialLoadRef = useRef(true);
+    const hasMorePages = currentPage < pagination.totalPages;
+    const prevFiltersRef = useRef({ sorting, filters });
     
+    // Use StatisticsForPrice only when we have games
+    const priceStatistics = games.length > 0 ? StatisticsForPrice(games) : {};
 
-    // sort games whenever sorting changes
-    useEffect(() => {
-        const sorted = sortGames(gamesInfo, sorting.by, sorting.ascending);
-        setSortedGames(sorted);
+    console.log(games)
+
+    // Load games with current pagination, sorting and filters
+    const loadGames = useCallback(async (page = 1, replace = true) => {
+        if (isLoading) return;
         
-        // Only reset visible range on initial load or when sorting changes
-        if (isInitialLoadRef.current) {
-            setVisibleRange({ start: 0, end: ITEMS_PER_PAGE + (1+PAGES_TO_LOAD_BELOW) });
-            isInitialLoadRef.current = false;
+        setIsLoading(true);
+        setLoadError(null);
+        
+        try {
+            console.log(`Loading page ${page} of games with filters:`, filters);
+            
+            const params = {
+                sortBy: sorting.by,
+                ascending: sorting.ascending,
+                searchText: filters?.searchText || "",
+                companySearchText: filters?.companySearchText || "",
+                genres: filters?.genres || [],
+                platforms: filters?.platforms || [],
+                pageNumber: page,
+                pageSize: ITEMS_PER_PAGE
+            };
+            
+            const result = await apiService.getPaginatedGames(params);
+            
+            console.log("API response:", result);
+
+            if (!result || !result.games) {
+                throw new Error("Invalid response format from API");
+            }
+            
+            console.log(`Received ${result.games.length} games for page ${page}`);
+            console.log("Pagination info:", result.pagination);
+            
+            // Only replace games if 'replace' is true, otherwise append
+            setGames(prevGames => 
+                replace ? result.games : [...prevGames, ...result.games]
+            );
+            setPagination(result.pagination);
+            setCurrentPage(page);
+        } catch (error) {
+            console.error('Error loading games:', error);
+            setLoadError(error.message || "Failed to load games");
+        } finally {
+            setIsLoading(false);
         }
-    }, [gamesInfo, sorting]);
-    
-    // update visible games when visible range changes
+    }, [sorting, filters, isLoading]);
+
+    // Reset and reload when sorting or filters change
     useEffect(() => {
-        setVisibleGames(sortedGames.slice(visibleRange.start, visibleRange.end));
-    }, [visibleRange, sortedGames]);
-    
-    // restore scroll position after games update
-    useEffect(() => {
-        if (containerRef.current && !isInitialLoadRef.current) {
-            // Use setTimeout to ensure the DOM has updated
-            setTimeout(() => {
-                containerRef.current.scrollTop = scrollPositionRef.current;
-            }, 0);
+        // Check if sorting or filters actually changed
+        const filtersChanged = 
+            JSON.stringify({ sorting, filters }) !== 
+            JSON.stringify(prevFiltersRef.current);
+        
+        if (filtersChanged) {
+            console.log("Sorting or filters changed, loading new data");
+            prevFiltersRef.current = { sorting, filters };
+            
+            // Don't clear games immediately, let loadGames handle it
+            loadGames(1, true);
+            console.log(games);
         }
-    }, [sortedGames]);
-    
-    // handle scroll events
+    }, [sorting, filters, loadGames]);
+
+    // Handle scroll events for infinite scrolling
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
@@ -78,61 +111,29 @@ export function StoreList() {
             scrollPositionRef.current = container.scrollTop;
             
             const { scrollTop, scrollHeight, clientHeight } = container;
-            const scrollPercentage = scrollTop / (scrollHeight - clientHeight);
+            // Check if scrolled to bottom (with some threshold)
+            const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 200;
             
-            // console.log(scrollPercentage)
-            // load more when scrolling down (near bottom)
-            if (scrollPercentage > 0.7) {
-                loadMoreItems();
-            }
-            
-            // remove items when scrolling up (near top)
-            if (scrollPercentage < 0.3) {
-                removeItems();
+            if (scrolledToBottom && hasMorePages) {
+                console.log(`Scrolled near bottom, loading page ${currentPage + 1}`);
+                loadGames(currentPage + 1, false);
             }
         };
         
         container.addEventListener('scroll', handleScroll);
         return () => container.removeEventListener('scroll', handleScroll);
-    }, [visibleRange, isLoading, sortedGames.length]);
-    
-    // load more items when scrolling down
-    const loadMoreItems = () => {
-        if (isLoading) return;
-        
-        setIsLoading(true);
-        
-        // calculate new end index
-        const newEnd = Math.min(
-            sortedGames.length,
-            visibleRange.end + ITEMS_PER_PAGE
-        )
-        
-        setVisibleRange({ start: 0, end: newEnd });
-        // console.log(0 + " to " + newEnd);
-        setIsLoading(false);
-    };
-    
-    // remove items when scrolling up
-    const removeItems = () => {
-        if (isLoading) return;
-        
-        setIsLoading(true);
+    }, [currentPage, hasMorePages, isLoading, loadGames]);
 
-        // calculate new end index to maintain the window size
-        const newEnd = Math.max(
-            ITEMS_PER_PAGE * (1+PAGES_TO_LOAD_BELOW),
-            visibleRange.end - ITEMS_PER_PAGE
-        )
-        
-        setVisibleRange({ start: 0, end: newEnd });
-        setIsLoading(false);
-    };
-
-    // Debug information
-    // console.log("Visible range:", visibleRange);
-    // console.log("Visible games count:", visibleGames.length);
-    // console.log("Total games:", sortedGames.length);
+    // Restore scroll position after loading more games
+    useEffect(() => {
+        if (containerRef.current && !isLoading && currentPage > 1) {
+            setTimeout(() => {
+                if (containerRef.current) {
+                    containerRef.current.scrollTop = scrollPositionRef.current;
+                }
+            }, 0);
+        }
+    }, [games, isLoading, currentPage]);
 
     return (
         <div style={{
@@ -142,11 +143,12 @@ export function StoreList() {
             color: "white",
             padding: "2rem",
             width: "100%",
-            height: "180vh", // set a fixed height for scrolling
-            overflow: "hidden", // prevent body scrolling
+            height: "180vh", 
+            overflow: "hidden",
             display: "flex",
             flexDirection: "column"
         }}>
+            {/* Header section */}
             <div>
                 <div>
                     <Link to={"/modify"} state={{gameData: null}} className={"gameButton"} style={{float: "right"}}>
@@ -163,6 +165,7 @@ export function StoreList() {
 
             <div style={{padding: "0.3rem"}}></div>
 
+            {/* Games list container */}
             <div 
                 ref={containerRef}
                 style={{
@@ -170,20 +173,60 @@ export function StoreList() {
                     overflowY: "auto",
                     paddingRight: "10px",
                 }}
-                className={ "gamesContainer" }
+                className={"gamesContainer"}
             >
-                {visibleGames.length === 0 ? (
+                {/* Error message */}
+                {loadError && (
+                    <div style={{
+                        textAlign: "center", 
+                        padding: "1rem", 
+                        color: "#ff6b6b",
+                        backgroundColor: "rgba(255,0,0,0.1)",
+                        borderRadius: "0.5rem",
+                        margin: "1rem 0"
+                    }}>
+                        Error: {loadError}
+                        <button 
+                            onClick={() => loadGames(currentPage, false)} 
+                            style={{
+                                marginLeft: "1rem",
+                                padding: "0.25rem 1rem",
+                                backgroundColor: "#6b5ce7",
+                                borderRadius: "0.25rem"
+                            }}
+                        >
+                            Retry
+                        </button>
+                    </div>
+                )}
+                
+                {/* Loading overlay for initial load */}
+                {isLoading && games.length === 0 && (
+                    <div style={{
+                        textAlign: "center", 
+                        padding: "2rem",
+                        backgroundColor: "rgba(0,0,0,0.2)",
+                        borderRadius: "0.5rem"
+                    }}>
+                        Loading games...
+                    </div>
+                )}
+                
+                {/* Empty state - only show when not loading and no games */}
+                {games.length === 0 && !isLoading ? (
                     <div style={{textAlign: "center", padding: "2rem"}}>
                         No games available
                     </div>
-                ) : ( console.log(visibleGames.map((game) => game)),
-                    visibleGames.map((game) => (
+                ) : (
+                    /* Game list items */
+                    games.map((game) => (
                         <div style={{display: "flex",
-                            // justifyContent: "space-between",
                             backgroundColor: "#2f1f59",
                             borderRadius: "1rem",
                             border: "1px solid rgba(255, 255, 255, 0.5)",
                             margin: "1rem 0",
+                            opacity: isLoading && currentPage === 1 ? "0.7" : "1", // Dim existing games during reload
+                            transition: "opacity 0.2s"
                         }} key={game.Id}>
                             <img src={iconsIDToObjs[game.IconID]} style={{
                                 padding: "1rem",
@@ -217,20 +260,22 @@ export function StoreList() {
                             </div>
                             <div style={{padding: "1rem", marginLeft: "auto"}}>
                                 <h5 style={{color: "#A6FF00"}}> ${game.Price} </h5>
-                                <h5 style={{color: "#A6FF00", float: "right"}}>{priceStatistics[game.Id]}</h5>
+                                <h5 style={{color: "#A6FF00", float: "right"}}>{priceStatistics[game.Id] || ""}</h5>
                             </div>
                         </div>
                     ))
                 )}
                 
-                {isLoading && (
+                {/* Loading indicator at bottom when fetching more */}
+                {isLoading && games.length > 0 && (
                     <div style={{textAlign: "center", padding: "1rem"}}>
-                        Loading more games...
+                        {currentPage === 1 ? "Refreshing games..." : "Loading more games..."}
                     </div>
                 )}
                 
-                {visibleRange.end >= sortedGames.length && sortedGames.length > 0 && (
-                    <div style={{textAlign: "center", padding: "1rem"}}>
+                {/* End of list indicator */}
+                {!hasMorePages && games.length > 0 && !isLoading && (
+                    <div style={{textAlign: "center", padding: "1rem", color: "rgba(255,255,255,0.6)"}}>
                         No more games to load
                     </div>
                 )}

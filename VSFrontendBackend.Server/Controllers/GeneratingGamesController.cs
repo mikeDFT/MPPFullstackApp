@@ -661,7 +661,7 @@ namespace VSFrontendBackend.Server.Controllers
                         try 
                         {
                             // Generate a new game
-                            var newGame = GameDataGenerator.GenerateGameData(gamesList, _companyRepository);
+                            var newGame = GameDataGenerator.GenerateGameData(gamesList.Items, _companyRepository);
                             Debug.WriteLine($"Generated new game: {newGame.Name}");
                             
                             // Add the game to the service

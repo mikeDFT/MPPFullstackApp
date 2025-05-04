@@ -8,6 +8,7 @@ namespace VSFrontendBackend.Server.Repository;
 public interface IGameRepository
 {
     Task<List<Game>> GetAllAsync();
+    Task<List<Game>> GetAllWithFilterAsync(FilterSortingGamesParams filterParams);
     Task<Game> GetByIdAsync(int id);
     Task<Game> AddAsync(Game game);
     Task<Game> UpdateAsync(Game game);
@@ -26,6 +27,45 @@ public class GameRepository : IGameRepository
     public async Task<List<Game>> GetAllAsync()
     {
         return await _context.Games.Include(g => g.Company).ToListAsync();
+    }
+
+    public async Task<List<Game>> GetAllWithFilterAsync(FilterSortingGamesParams filterParams)
+    {
+        var query = _context.Games.Include(g => g.Company).AsQueryable();
+
+        // Apply filters
+        if (!string.IsNullOrEmpty(filterParams.SearchText))
+        {
+            query = query.Where(g => g.Name.Contains(filterParams.SearchText));
+        }
+
+        if (!string.IsNullOrEmpty(filterParams.CompanySearchText))
+        {
+            query = query.Where(g => g.Company.CompanyName.Contains(filterParams.CompanySearchText));
+        }
+
+        // Get the filtered list to apply in-memory filters for genres and platforms
+        var filteredGames = await query.ToListAsync();
+        
+        // Apply genre filter
+        if (filterParams.Genres != null && filterParams.Genres.Count > 0)
+        {
+            foreach (var genre in filterParams.Genres)
+            {
+                filteredGames = filteredGames.Where(g => g.Genres.Contains(genre)).ToList();
+            }
+        }
+
+        // Apply platform filter
+        if (filterParams.Platforms != null && filterParams.Platforms.Count > 0)
+        {
+            foreach (var platform in filterParams.Platforms)
+            {
+                filteredGames = filteredGames.Where(g => g.Platforms.Contains(platform)).ToList();
+            }
+        }
+
+        return filteredGames;
     }
 
     public async Task<Game> GetByIdAsync(int id)

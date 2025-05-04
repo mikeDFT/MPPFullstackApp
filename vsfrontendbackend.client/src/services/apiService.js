@@ -183,8 +183,8 @@ export const apiService = {
     POLLING_INTERVAL: 10000,
     INITIAL_REFRESH_TIME: 300,
 
-    // Fetch all games
-    getAllGames: async (params) => {
+    // Fetch all games with pagination
+    getPaginatedGames: async (params) => {
         const executeRequest = async () => {
             const queryParams = new URLSearchParams();
             
@@ -203,11 +203,17 @@ export const apiService = {
                     queryParams.append('Platforms', platform);
                 }
             }
+            
+            // Add pagination parameters
+            queryParams.append('PageNumber', params.pageNumber || 1);
+            queryParams.append('PageSize', params.pageSize || 10);
 
             const queryString = queryParams.toString();
             const response = await fetch(`${API_BASE_URL}/game?${queryString}`);
-            var games = await handleResponse(response);
-            return games.map(game => ({
+            var result = await handleResponse(response);
+            
+            // Map game items to our expected format
+            const mappedGames = result.items.map(game => ({
                 Id: game.id,
                 Name: game.name,
                 Price: game.price,
@@ -219,20 +225,53 @@ export const apiService = {
                 CompanyID: game.companyID,
                 CompanyName: game.companyName
             }));
+            
+            // Return both the games and pagination metadata
+            return {
+                games: mappedGames,
+                pagination: {
+                    totalCount: result.totalCount,
+                    pageNumber: result.pageNumber,
+                    pageSize: result.pageSize,
+                    totalPages: result.totalPages,
+                    hasNext: result.hasNext,
+                    hasPrevious: result.hasPrevious
+                }
+            };
         };
 
         try {
             if (!canMakeRequest()) {
                 // Return data from localStorage when offline
                 const savedGames = localStorage.getItem('gamesInfo');
-                return savedGames ? JSON.parse(savedGames) : [];
+                return { 
+                    games: savedGames ? JSON.parse(savedGames) : [],
+                    pagination: {
+                        totalCount: savedGames ? JSON.parse(savedGames).length : 0,
+                        pageNumber: params.pageNumber || 1,
+                        pageSize: params.pageSize || 10,
+                        totalPages: 1,
+                        hasNext: false,
+                        hasPrevious: false
+                    }
+                };
             }
             return await executeRequest();
         } catch (error) {
             console.error('Failed to fetch games:', error);
             // Return data from localStorage on error
             const savedGames = localStorage.getItem('gamesInfo');
-            return savedGames ? JSON.parse(savedGames) : [];
+            return { 
+                games: savedGames ? JSON.parse(savedGames) : [],
+                pagination: {
+                    totalCount: savedGames ? JSON.parse(savedGames).length : 0,
+                    pageNumber: params.pageNumber || 1,
+                    pageSize: params.pageSize || 10,
+                    totalPages: 1,
+                    hasNext: false,
+                    hasPrevious: false
+                }
+            };
         }
     },
 

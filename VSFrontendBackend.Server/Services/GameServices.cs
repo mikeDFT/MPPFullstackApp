@@ -6,7 +6,7 @@ namespace VSFrontendBackend.Server.Services;
 
 public interface IGameService
 {
-    Task<List<Game>> GetAllAsync(FilterSortingGamesParams filterSortingGamesParams);
+    Task<PaginatedResult<Game>> GetAllAsync(FilterSortingGamesParams filterSortingGamesParams);
     Task<Game> GetByIdAsync(int id);
     Task<Game> ModifyAsync(Game game);
     Task DeleteAsync(int id);
@@ -21,37 +21,17 @@ public class GameService : IGameService
         _gameRepository = gameRepository;
     }
 
-    public async Task<List<Game>> GetAllAsync(FilterSortingGamesParams filterSortingGamesParams)
+    public async Task<PaginatedResult<Game>> GetAllAsync(FilterSortingGamesParams filterSortingGamesParams)
     {
-        List<Game> games = await _gameRepository.GetAllAsync();
-
-        if (filterSortingGamesParams.SearchText != null)
-        {
-            games = games.Where(g => g.Name.Contains(filterSortingGamesParams.SearchText, StringComparison.OrdinalIgnoreCase)).ToList();
-        }
-
-        Debug.WriteLine("CompanySearchText: " + filterSortingGamesParams.CompanySearchText);
-        if (filterSortingGamesParams.CompanySearchText != null)
-        {
-            games = games.Where(g => g.Company.CompanyName.Contains(filterSortingGamesParams.CompanySearchText, StringComparison.OrdinalIgnoreCase)).ToList();
-        }
-
-        if (filterSortingGamesParams.Genres != null)
-        {
-            foreach (var genre in filterSortingGamesParams.Genres)
-            {
-                games = games.Where(g => g.Genres.Contains(genre)).ToList();
-            }
-        }
-
-        if (filterSortingGamesParams.Platforms != null)
-        {
-            foreach (var platform in filterSortingGamesParams.Platforms)
-            {
-                games = games.Where(g => g.Platforms.Contains(platform)).ToList();
-            }
-        }
-
+        // Get all games with filtering applied
+        var games = await _gameRepository.GetAllWithFilterAsync(filterSortingGamesParams);
+        
+        // Calculate pagination
+        var totalCount = games.Count;
+        var pageSize = filterSortingGamesParams.PageSize;
+        var pageNumber = filterSortingGamesParams.PageNumber;
+        
+        // Apply sorting
         if (filterSortingGamesParams.SortBy == "Price")
         {
             games = filterSortingGamesParams.Ascending
@@ -70,8 +50,20 @@ public class GameService : IGameService
                 ? games.OrderBy(g => g.Name).ToList()
                 : games.OrderByDescending(g => g.Name).ToList();
         }
-
-        return games;
+        
+        // Apply pagination
+        var pagedGames = games
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+            
+        return new PaginatedResult<Game>
+        {
+            Items = pagedGames,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
     }
 
     public async Task<Game> GetByIdAsync(int id)

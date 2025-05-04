@@ -8,4 +8,8 @@ public class FilterSortingGamesParams
     public string? SortBy { get; set; }  // "price", "rating", "name"
     public bool Ascending { get; set; }
     public string? CompanySearchText { get; set; }
+    
+    // Pagination parameters
+    public int PageNumber { get; set; } = 1;
+    public int PageSize { get; set; } = 10;
 }

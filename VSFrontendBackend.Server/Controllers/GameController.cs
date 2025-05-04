@@ -44,8 +44,22 @@ namespace VSFrontendBackend.Server.Controllers
                 if (filterSortingGamesParams == null)
                     filterSortingGamesParams = new FilterSortingGamesParams();
 
-                var games = await _gameService.GetAllAsync(filterSortingGamesParams);
-                var gameDTOs = GameDTO.FromGameList(games);
+                var paginatedGames = await _gameService.GetAllAsync(filterSortingGamesParams);
+                
+                // Convert games to DTOs
+                var gameDTOs = GameDTO.FromGameList(paginatedGames.Items);
+                
+                // Create response with pagination metadata
+                var result = new 
+                {
+                    Items = gameDTOs,
+                    TotalCount = paginatedGames.TotalCount,
+                    PageNumber = paginatedGames.PageNumber,
+                    PageSize = paginatedGames.PageSize,
+                    TotalPages = paginatedGames.TotalPages,
+                    HasNext = paginatedGames.HasNext,
+                    HasPrevious = paginatedGames.HasPrevious
+                };
                 
                 stopwatch.Stop();
                 
@@ -53,13 +67,13 @@ namespace VSFrontendBackend.Server.Controllers
                 {
                     ActionType = "GetGames",
                     RequestPath = HttpContext.Request.Path,
-                    Message = $"Retrieved {games.Count} games with filter: {JsonSerializer.Serialize(filterSortingGamesParams)}",
+                    Message = $"Retrieved {gameDTOs.Count} games (page {paginatedGames.PageNumber} of {paginatedGames.TotalPages}) with filter: {JsonSerializer.Serialize(filterSortingGamesParams)}",
                     ClientIpAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
                     Status = "200 OK",
                     DurationMs = stopwatch.ElapsedMilliseconds
                 });
                 
-                return Ok(gameDTOs);
+                return Ok(result);
             }
             catch (Exception ex)
             {

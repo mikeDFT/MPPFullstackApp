@@ -63,22 +63,34 @@ export function DataProvider({ children }) {
         if (!isMounted.current) return;
         
         try {
-            console.log(companySearchText);
-            const games = await apiService.getAllGames({
+            console.log("Fetching games for context with filters:", {
+                sortBy: sorting.by,
+                ascending: sorting.ascending,
+                genres: genreFilters,
+                platforms: platformFilters,
+                searchText,
+                companySearchText
+            });
+            
+            const result = await apiService.getPaginatedGames({
                 sortBy: sorting.by,
                 ascending: sorting.ascending,
                 genres: genreFilters,
                 platforms: platformFilters,
                 searchText: searchText,
-                companySearchText: companySearchText
+                companySearchText: companySearchText,
+                pageNumber: 1,          // Always get the first page for context data
+                pageSize: 200           // Use a large page size to get most games for context
             });
-            console.log("Fetched games:", games);
-
-            if (isMounted.current) {
-                setGamesInfo(games);
+            
+            if (isMounted.current && result && result.games) {
+                console.log("Context received games:", result.games.length);
+                setGamesInfo(result.games);
+            } else {
+                console.warn("Invalid or empty result from getPaginatedGames in context");
             }
         } catch (error) {
-            console.error('Error fetching games:', error);
+            console.error('Error fetching games for context:', error);
         }
     }, [sorting, genreFilters, platformFilters, searchText, companySearchText]);
     
@@ -218,10 +230,17 @@ export function DataProvider({ children }) {
             searchText,
             setSearchText,
             ratingDistribution,
+            filters: {  // Add filters object for StoreList component
+                searchText,
+                companySearchText,
+                genres: genreFilters,
+                platforms: platformFilters,
+            },
             actions: {
                 deleteGame,
                 modifyGame,
-                setList: setGamesInfo
+                setList: setGamesInfo,
+                refreshGames: fetchGamesWithCurrentState // Add direct access to refresh function
             }
         },
         
@@ -246,7 +265,7 @@ export function DataProvider({ children }) {
     }), [
         gamesInfo, sorting, genreFilters, platformFilters, searchText, deleteGame, modifyGame,
         companiesInfo, companySorting, companySearchText, deleteCompany, modifyCompany,
-        ratingDistribution
+        ratingDistribution, fetchGamesWithCurrentState
     ]);
     
     return (

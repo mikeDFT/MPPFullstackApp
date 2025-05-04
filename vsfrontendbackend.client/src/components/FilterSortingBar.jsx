@@ -138,8 +138,7 @@ export function FilterSortingBar() { // send states (filters and sorting dicts) 
                             fontWeight: "bold",
                         }}
                         value={companySearchText || null}
-                        onChange={(event) => {setCompanySearchText(event.target.value);
-							console.log(companySearchText); console.log(event.target.value)}}>
+                        onChange={(event) => {setCompanySearchText(event.target.value)}}>
                         <Form.Control 
                             type="text" 
                             placeholder="Company Name"
