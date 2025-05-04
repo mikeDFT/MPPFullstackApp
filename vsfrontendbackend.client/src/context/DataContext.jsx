@@ -35,6 +35,17 @@ export function DataProvider({ children }) {
     const [companySorting, setCompanySorting] = useState({ by: "companyName", ascending: true });
     const [companySearchText, setCompanySearchText] = useState("");
     
+    // Rating chart state
+    const [ratingDistribution, setRatingDistribution] = useState(() => {
+        const savedDistribution = localStorage.getItem('ratingDistribution');
+        return savedDistribution ? JSON.parse(savedDistribution) : {
+            "1-2": 0,
+            "2-3": 0,
+            "3-4": 0,
+            "4-5": 0
+        };
+    });
+    
     // Use a ref to track if the component is mounted
     const isMounted = useRef(true);
 
@@ -90,6 +101,22 @@ export function DataProvider({ children }) {
         }
     }, [companySorting, companySearchText]);
 
+    // Fetch rating distribution data
+    const fetchRatingDistribution = useCallback(async () => {
+        if (!isMounted.current) return;
+        
+        try {
+            const distribution = await apiService.getRatingDistribution();
+            
+            if (isMounted.current) {
+                setRatingDistribution(distribution);
+                localStorage.setItem('ratingDistribution', JSON.stringify(distribution));
+            }
+        } catch (error) {
+            console.error('Error fetching rating distribution:', error);
+        }
+    }, []);
+
     // Effect for data polling
     useEffect(() => {
         isMounted.current = true;
@@ -97,22 +124,27 @@ export function DataProvider({ children }) {
         // Initial fetch
         fetchGamesWithCurrentState();
         fetchCompaniesWithCurrentState();
+        fetchRatingDistribution();
         
         // Set timers for data refresh
         const gameTimeout = setTimeout(fetchGamesWithCurrentState, apiService.INITIAL_REFRESH_TIME);
         const companyTimeout = setTimeout(fetchCompaniesWithCurrentState, apiService.INITIAL_REFRESH_TIME);
+        const ratingTimeout = setTimeout(fetchRatingDistribution, apiService.INITIAL_REFRESH_TIME);
         
         const gameInterval = setInterval(fetchGamesWithCurrentState, apiService.POLLING_INTERVAL);
         const companyInterval = setInterval(fetchCompaniesWithCurrentState, apiService.POLLING_INTERVAL);
+        const ratingInterval = setInterval(fetchRatingDistribution, apiService.POLLING_INTERVAL);
         
         return () => {
             isMounted.current = false;
             clearTimeout(gameTimeout);
             clearTimeout(companyTimeout);
+            clearTimeout(ratingTimeout);
             clearInterval(gameInterval);
             clearInterval(companyInterval);
+            clearInterval(ratingInterval);
         };
-    }, [fetchGamesWithCurrentState, fetchCompaniesWithCurrentState]);
+    }, [fetchGamesWithCurrentState, fetchCompaniesWithCurrentState, fetchRatingDistribution]);
 
     // Game actions
     const deleteGame = useCallback(async (gameId) => {
@@ -185,6 +217,7 @@ export function DataProvider({ children }) {
             setPlatformFilters,
             searchText,
             setSearchText,
+            ratingDistribution,
             actions: {
                 deleteGame,
                 modifyGame,
@@ -212,7 +245,8 @@ export function DataProvider({ children }) {
         DEFAULT_GENRES,
     }), [
         gamesInfo, sorting, genreFilters, platformFilters, searchText, deleteGame, modifyGame,
-        companiesInfo, companySorting, companySearchText, deleteCompany, modifyCompany
+        companiesInfo, companySorting, companySearchText, deleteCompany, modifyCompany,
+        ratingDistribution
     ]);
     
     return (

@@ -39,6 +39,7 @@ builder.Services.AddScoped<ILogRepository, LogRepository>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<ILogService, LogService>();
+builder.Services.AddScoped<IRatingChartService, RatingChartService>();
 
 // Register file services
 string fileStoragePath = Path.Combine(Directory.GetCurrentDirectory(), "FileStorage");
