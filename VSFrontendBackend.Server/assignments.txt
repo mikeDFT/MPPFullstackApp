@@ -53,4 +53,18 @@ bronze:
 
 */
 
+/*
+assignment 4: security
+
+bronze: 
+	http -> https, genereaza contract
+	authentication (jwt as example)
+*/
+
+/*
+assignment 5: deployment
+
+bronze:
+	
+*/
 
