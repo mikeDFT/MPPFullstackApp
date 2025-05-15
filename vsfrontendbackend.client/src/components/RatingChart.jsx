@@ -1,49 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useData } from "@/context/DataContext";
 
 export function RatingChart() {
-	const { gamesInfo } = useData().games;
-
-	// state for storing the processed data
-	const [chartData, setChartData] = useState({
-		"1-2": 0,
-		"2-3": 0,
-		"3-4": 0,
-		"4-5": 0
-	});
-	
-	// process data whenever gamesInfo changes
-	useEffect(() => {
-		if (!gamesInfo) return;
-		
-		// initialize counts
-		const ratingCounts = {
-			"1-2": 0,
-			"2-3": 0,
-			"3-4": 0,
-			"4-5": 0
-		};
-		
-		// count games in each rating interval
-		gamesInfo.forEach(game => {
-			const rating = game.Rating;
-			
-			if (rating < 2) {
-				ratingCounts["1-2"]++;
-			} else if (rating >= 2 && rating < 3) {
-				ratingCounts["2-3"]++;
-			} else if (rating >= 3 && rating < 4) {
-				ratingCounts["3-4"]++;
-			} else if (rating >= 4) {
-				ratingCounts["4-5"]++;
-			}
-		});
-		
-		setChartData(ratingCounts);
-	}, [gamesInfo]);
+	const { ratingDistribution } = useData().games;
 	
 	// calculate the maximum value for scaling
-	const maxCount = Math.max(...Object.values(chartData), 1);
+	const maxCount = Math.max(...Object.values(ratingDistribution), 1);
 	
 	return (
 		<div style={{
@@ -58,7 +20,7 @@ export function RatingChart() {
 
 			<div style={{padding:'2rem'}}/>
 			<div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem", height: "200px", alignItems: "flex-end" }}>
-				{Object.entries(chartData).map(([range, count]) => (
+				{Object.entries(ratingDistribution).map(([range, count]) => (
 					<div key={range} style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
 						<div 
 							style={{ 
@@ -81,4 +43,4 @@ export function RatingChart() {
 	);
 }
 
-export default RatingChart; 
+export default RatingChart;

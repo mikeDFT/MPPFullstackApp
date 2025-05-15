@@ -6,14 +6,7 @@ import { useData } from "@/context/DataContext.jsx";
 
 export function SearchBar() {
     const { searchText, setSearchText } = useData().games;
-
-    function menuClicked() {
-        console.log("e");
-    }
-    function searchClicked() {
-        console.log("f");
-    }
-
+    
     return (
         <div style={{
             backgroundColor: "#1F0D44",

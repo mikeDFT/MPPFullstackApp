@@ -39,6 +39,7 @@ builder.Services.AddScoped<ILogRepository, LogRepository>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<ILogService, LogService>();
+builder.Services.AddScoped<IRatingChartService, RatingChartService>();
 
 // Register file services
 string fileStoragePath = Path.Combine(Directory.GetCurrentDirectory(), "FileStorage");
@@ -75,18 +76,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", builder =>
     {
-        // Get client URL from environment variables or use default
-        string clientUrl = Environment.GetEnvironmentVariable("CLIENT_URL") ?? 
-            $"http://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.160"}:{Environment.GetEnvironmentVariable("CLIENT_PORT") ?? "53392"}";
-        
-        // Get server URL from environment variables or use default
-        string serverUrl = $"http://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.160"}:{Environment.GetEnvironmentVariable("SERVER_HTTP_PORT") ?? "7299"}";
-        
-        // Add WebSocket URL
-        string wsUrl = $"ws://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.160"}:{Environment.GetEnvironmentVariable("SERVER_HTTP_PORT") ?? "7299"}";
-        string wssUrl = $"wss://{Environment.GetEnvironmentVariable("SERVER_IP") ?? "192.168.10.160"}:{Environment.GetEnvironmentVariable("SERVER_HTTP_PORT") ?? "7299"}";
-        
-        builder.WithOrigins(clientUrl, serverUrl, wsUrl, wssUrl)
+        // Much more permissive CORS policy for Docker environment
+        builder.SetIsOriginAllowed(_ => true)
                .AllowAnyHeader()
                .AllowAnyMethod()
                .AllowCredentials(); // for cookies/auth
@@ -127,14 +118,17 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var dbContext = services.GetRequiredService<AppDbContext>();
-        dbContext.Database.EnsureCreated();
-        // Alternatively, you can use Migrations:
-        // dbContext.Database.Migrate();
+        
+        // Apply pending migrations instead of just ensuring the database is created
+        dbContext.Database.Migrate();
+        
+        Console.WriteLine("Database migrations applied successfully");
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while creating the database.");
+        logger.LogError(ex, "An error occurred while migrating the database.");
+        Console.WriteLine($"Migration error: {ex.Message}");
     }
 }
 
@@ -146,7 +140,11 @@ if (app.Environment.IsDevelopment())
 }
 
 // The order of middleware is important
-app.UseHttpsRedirection();
+// Comment out HTTPS redirection in Docker environment
+if (!string.Equals(Environment.GetEnvironmentVariable("DOCKER_ENVIRONMENT"), "true"))
+{
+    app.UseHttpsRedirection();
+}
 
 // CORS should come before routing but after redirections
 app.UseCors("AllowReactApp");
@@ -161,9 +159,9 @@ app.UseWebSockets(new WebSocketOptions
 
 app.UseAuthorization();
 
-// Static files middleware
+// Configure static files - simplified approach that works in Docker
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(); // This will automatically look for wwwroot in the application directory
 
 // Map controllers AFTER UseWebSockets
 app.MapControllers();

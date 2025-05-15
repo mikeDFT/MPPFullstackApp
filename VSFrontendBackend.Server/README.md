@@ -32,7 +32,7 @@ The `launchSettings.json` file now includes environment variables that can be ac
 "environmentVariables": {
   "ASPNETCORE_ENVIRONMENT": "Development",
   "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy",
-  "SERVER_IP": "192.168.10.160",
+  "SERVER_IP": "localhost",
   "SERVER_HTTP_PORT": "7299",
   "SERVER_IIS_PORT": "33367",
   "CLIENT_PORT": "53392"
@@ -66,7 +66,7 @@ Create a file called appsettings.json in VSFrontendBackend.Server with the follo
 ```
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=.;Database=MyAppDb;Trusted_Connection=True;"
+    "DefaultConnection": "Server=.;Database=VSBackendFrontend;Trusted_Connection=True;"
   },
   "Logging": {
     "LogLevel": {

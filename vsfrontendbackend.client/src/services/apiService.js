@@ -496,5 +496,37 @@ export const apiService = {
             console.error('Error checking if file exists:', error);
             return false;
         }
+    },
+
+    // Get rating distribution data
+    getRatingDistribution: async () => {
+        const executeRequest = async () => {
+            const response = await fetch(`${API_BASE_URL}/ratingchart`);
+            return await handleResponse(response);
+        };
+
+        try {
+            if (!canMakeRequest()) {
+                // Return data from localStorage when offline
+                const savedRatingData = localStorage.getItem('ratingDistribution');
+                return savedRatingData ? JSON.parse(savedRatingData) : {
+                    "1-2": 0,
+                    "2-3": 0,
+                    "3-4": 0,
+                    "4-5": 0
+                };
+            }
+            return await executeRequest();
+        } catch (error) {
+            console.error('Failed to fetch rating distribution:', error);
+            // Return data from localStorage on error
+            const savedRatingData = localStorage.getItem('ratingDistribution');
+            return savedRatingData ? JSON.parse(savedRatingData) : {
+                "1-2": 0,
+                "2-3": 0,
+                "3-4": 0,
+                "4-5": 0
+            };
+        }
     }
 };
