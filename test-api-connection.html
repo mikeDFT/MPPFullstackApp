@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Connection Test</title>
+    <script>
+        async function testConnection() {
+            const backendUrl = document.getElementById('backendUrl').value;
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                resultDiv.innerHTML = "Testing connection...";
+                // First try the root health endpoint
+                let response;
+                try {
+                    response = await fetch(`${backendUrl}/health`);
+                } catch (error) {
+                    // If that fails, try the echo endpoint
+                    response = await fetch(`${backendUrl}/health/echo?message=hello`);
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <div style="color: green;">
+                        <h3>Connection successful!</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div style="color: red;">
+                        <h3>Connection failed</h3>
+                        <p>${error.message}</p>
+                        <p>Try checking:</p>
+                        <ul>
+                            <li>Is the server running?</li>
+                            <li>Is the port correct?</li>
+                            <li>Are there CORS issues?</li>
+                        </ul>
+                    </div>
+                `;
+                console.error("Connection test error:", error);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>API Connection Test</h1>
+    <div>
+        <input type="text" id="backendUrl" value="http://localhost:7299" style="width: 300px;" />
+        <button onclick="testConnection()">Test Connection</button>
+    </div>
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;">
+        Results will appear here
+    </div>
+</body>
+</html>

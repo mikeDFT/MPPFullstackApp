@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <SpaRoot>..\vsfrontendbackend.client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
-    <SpaProxyServerUrl>http://192.168.10.160:53392</SpaProxyServerUrl> <!--https://localhost:53392-->
+    <SpaProxyServerUrl>http://localhost:53392</SpaProxyServerUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,12 +22,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="xunit" Version="2.9.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\vsfrontendbackend.client\vsfrontendbackend.client.esproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
 
 </Project>

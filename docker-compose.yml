@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=SaPasswordPlease!
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+      - ./docker-sqlserver-init:/docker-sqlserver-init
+      - ./VSFrontendBackend.Server/SQLQueries:/sqlqueries
+    networks:
+      - app-network
+    # Add healthcheck for sql server
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "SaPasswordPlease!" -Q "SELECT 1" -C || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./VSFrontendBackend.Server
+      dockerfile: Dockerfile
+    container_name: backend
+    ports:
+      - "7299:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOCKER_ENVIRONMENT=true
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=VSFrontendBackend;User Id=sa;Password=SaPasswordPlease!;TrustServerCertificate=True;
+      - SERVER_IP=backend
+      - SERVER_HTTP_PORT=8080
+      - CLIENT_PORT=80
+      - ASPNETCORE_URLS=http://+:8080
+      # Add a flag to ensure migrations run on startup
+      - RUN_MIGRATIONS=true
+    volumes:
+      - backend_filestorage:/app/FileStorage
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+    # Add healthcheck for backend
+    healthcheck:
+      test: curl --fail http://localhost:8080/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  data-seeder:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: data-seeder
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        echo "Waiting for backend to start and run migrations..."
+        sleep 45s
+        echo "Running initialization scripts..."
+        /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P "SaPasswordPlease!" -i /docker-sqlserver-init/init.sql -C
+        echo "Running data generation scripts..."
+        /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P "SaPasswordPlease!" -i /sqlqueries/GeneratingSomeData.sql -C
+        /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P "SaPasswordPlease!" -i /sqlqueries/GeneratingManyGamesForCompanies.sql -C
+    volumes:
+      - ./docker-sqlserver-init:/docker-sqlserver-init
+      - ./VSFrontendBackend.Server/SQLQueries:/sqlqueries
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./vsfrontendbackend.client
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "53392:80"
+    environment:
+      - SERVER_IP=backend
+      - SERVER_HTTP_PORT=8080
+      # Add additional variables for React app to access
+      - REACT_APP_API_URL=http://backend:8080
+      - VITE_API_URL=http://backend:8080
+      - VITE_SERVER_IP=backend
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+volumes:
+  backend_filestorage:
+  mssql_data:
+
+networks:
+  app-network:
+    driver: bridge

@@ -1,0 +1,47 @@
+apiVersion: 2019-12-01
+location: germanywest
+name: vs-frontend-backend
+properties:
+  containers:
+  - name: frontend
+    properties:
+      image: yourregistry.azurecr.io/vsfrontendbackend/frontend:latest
+      resources:
+        requests:
+          cpu: 1.0
+          memoryInGB: 1.5
+      ports:
+      - port: 80
+      environmentVariables:
+      - name: SERVER_IP
+        value: "backend"
+      - name: SERVER_HTTP_PORT
+        value: "8080"
+
+  - name: backend
+    properties:
+      image: yourregistry.azurecr.io/vsfrontendbackend/backend:latest
+      resources:
+        requests:
+          cpu: 1.0
+          memoryInGB: 1.5
+      ports:
+      - port: 8080
+      environmentVariables:
+      - name: ASPNETCORE_ENVIRONMENT
+        value: "Production"
+      - name: SERVER_IP
+        value: "backend"
+      - name: SERVER_HTTP_PORT
+        value: "8080"
+      - name: CLIENT_PORT
+        value: "80"
+
+  osType: Windows
+  ipAddress:
+    type: Public
+    ports:
+    - protocol: tcp
+      port: 80
+    - protocol: tcp
+      port: 8080

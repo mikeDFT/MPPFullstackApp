@@ -1,4 +1,7 @@
-USE ...
+USE VSFrontendBackend
+
+-- to run in container
+-- /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "SaPasswordPlease!" -i /sqlqueries/GeneratingManyGamesForCompanies.sql -C
 
 -- Create a temp table to store generated games
 CREATE TABLE #TempGames (
