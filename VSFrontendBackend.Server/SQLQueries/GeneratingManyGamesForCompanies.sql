@@ -1,7 +1,10 @@
 USE VSFrontendBackend
 
--- to run in container
+-- to run sql files in container
 -- /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "SaPasswordPlease!" -i /sqlqueries/GeneratingManyGamesForCompanies.sql -C
+
+-- to run queries in container
+-- /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "SaPasswordPlease!" -Q "USE VSFrontendBackend; SELECT * FROM Games" -C 
 
 -- Create a temp table to store generated games
 CREATE TABLE #TempGames (
