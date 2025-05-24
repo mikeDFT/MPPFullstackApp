@@ -339,11 +339,10 @@ export const apiService = {
             throw error;
         }
     },    // Fetch all companies
-    getAllCompanies: async (params) => {
-        // Use simulated backend if in simulation mode or server is unavailable
+    getAllCompanies: async (params) => {        // Use local backend if in simulation mode or server is unavailable
         if (shouldUseSimulation()) {
-            console.log('Using simulated backend for getAllCompanies');
-            return await simulatedBackend.getAllCompanies(params);
+            console.log('Using local backend for getAllCompanies');
+            return await localBackend.companies.getAll(params);
         }
 
         const executeRequest = async () => {
@@ -366,17 +365,15 @@ export const apiService = {
             }
             return await executeRequest();
         } catch (error) {
-            console.error('Failed to fetch companies:', error);
-            // Fallback to simulated backend on error
-            console.log('Falling back to simulated backend due to error');
-            return await simulatedBackend.getAllCompanies(params);
+            console.error('Failed to fetch companies:', error);            // Fallback to local backend on error
+            console.log('Falling back to local backend due to error');
+            return await localBackend.companies.getAll(params);
         }
     },    // Fetch a single company
-    getCompany: async (id) => {
-        // Use simulated backend if in simulation mode or server is unavailable
+    getCompany: async (id) => {        // Use local backend if in simulation mode or server is unavailable
         if (shouldUseSimulation()) {
-            console.log('Using simulated backend for getCompany');
-            return await simulatedBackend.getCompanyById(id);
+            console.log('Using local backend for getCompany');
+            return await localBackend.companies.getById(id);
         }
 
         const executeRequest = async () => {
@@ -397,18 +394,16 @@ export const apiService = {
             }
             return await executeRequest();
         } catch (error) {
-            console.error('Failed to fetch company:', error);
-            // Fallback to simulated backend on error
-            console.log('Falling back to simulated backend due to error');
-            return await simulatedBackend.getCompanyById(id);
+            console.error('Failed to fetch company:', error);            // Fallback to local backend on error
+            console.log('Falling back to local backend due to error');
+            return await localBackend.companies.getById(id);
         }
     },
       // Add new company or update an already existing one
-    modifyCompany: async (company) => {
-        // Use simulated backend if in simulation mode or server is unavailable
+    modifyCompany: async (company) => {        // Use local backend if in simulation mode or server is unavailable
         if (shouldUseSimulation()) {
-            console.log('Using simulated backend for modifyCompany');
-            return await simulatedBackend.createOrUpdateCompany(company);
+            console.log('Using local backend for modifyCompany');
+            return await localBackend.companies.modify(company);
         }
 
         const executeRequest = async () => {
@@ -431,11 +426,10 @@ export const apiService = {
             throw error;
         }
     },    // Delete company
-    deleteCompany: async (id) => {
-        // Use simulated backend if in simulation mode or server is unavailable
+    deleteCompany: async (id) => {        // Use local backend if in simulation mode or server is unavailable
         if (shouldUseSimulation()) {
-            console.log('Using simulated backend for deleteCompany');
-            return await simulatedBackend.deleteCompany(id);
+            console.log('Using local backend for deleteCompany');
+            return await localBackend.companies.delete(id);
         }
 
         const executeRequest = async () => {
@@ -456,11 +450,10 @@ export const apiService = {
             throw error;
         }
     },    // File upload and download methods
-    uploadFile: async (file) => {
-        // Use simulated backend if in simulation mode or server is unavailable
+    uploadFile: async (file) => {        // Use local backend if in simulation mode or server is unavailable
         if (shouldUseSimulation()) {
-            console.log('Using simulated backend for uploadFile');
-            return await simulatedBackend.uploadFile(file);
+            console.log('Using local backend for uploadFile');
+            return await localBackend.files.upload(file);
         }
 
         const formData = new FormData();
@@ -483,16 +476,14 @@ export const apiService = {
 
             return await json;
         } catch (error) {
-            console.error('Error uploading file:', error);
-            // Fallback to simulated backend on error
-            console.log('Falling back to simulated backend due to error');
-            return await simulatedBackend.uploadFile(file);
+            console.error('Error uploading file:', error);            // Fallback to local backend on error
+            console.log('Falling back to local backend due to error');
+            return await localBackend.files.upload(file);
         }
-    },    downloadFile: async () => {
-        // Use simulated backend if in simulation mode or server is unavailable
+    },    downloadFile: async () => {        // Use local backend if in simulation mode or server is unavailable
         if (shouldUseSimulation()) {
-            console.log('Using simulated backend for downloadFile');
-            return await simulatedBackend.downloadFile();
+            console.log('Using local backend for downloadFile');
+            return await localBackend.files.download();
         }
 
         try {
@@ -529,16 +520,14 @@ export const apiService = {
             
             return { blob, filename, contentType };
         } catch (error) {
-            console.error('Error downloading file:', error);
-            // Fallback to simulated backend on error
-            console.log('Falling back to simulated backend due to error');
-            return await simulatedBackend.downloadFile();
+            console.error('Error downloading file:', error);            // Fallback to local backend on error
+            console.log('Falling back to local backend due to error');
+            return await localBackend.files.download();
         }
-    },    checkFileExists: async () => {
-        // Use simulated backend if in simulation mode or server is unavailable
+    },    checkFileExists: async () => {        // Use local backend if in simulation mode or server is unavailable
         if (shouldUseSimulation()) {
-            console.log('Using simulated backend for checkFileExists');
-            return await simulatedBackend.checkFileExists();
+            console.log('Using local backend for checkFileExists');
+            return await localBackend.files.exists();
         }
 
         try {
@@ -551,17 +540,15 @@ export const apiService = {
             const data = await response.json();
             return data.exists;
         } catch (error) {
-            console.error('Error checking if file exists:', error);
-            // Fallback to simulated backend on error
-            console.log('Falling back to simulated backend due to error');
-            return await simulatedBackend.checkFileExists();
+            console.error('Error checking if file exists:', error);            // Fallback to local backend on error
+            console.log('Falling back to local backend due to error');
+            return await localBackend.files.exists();
         }
     },    // Get rating distribution data
-    getRatingDistribution: async () => {
-        // Use simulated backend if in simulation mode or server is unavailable
+    getRatingDistribution: async () => {        // Use local backend if in simulation mode or server is unavailable
         if (shouldUseSimulation()) {
-            console.log('Using simulated backend for getRatingDistribution');
-            return await simulatedBackend.getRatingDistribution();
+            console.log('Using local backend for getRatingDistribution');
+            return await localBackend.ratingChart.getRatingDistribution();
         }
 
         const executeRequest = async () => {
@@ -582,10 +569,9 @@ export const apiService = {
             }
             return await executeRequest();
         } catch (error) {
-            console.error('Failed to fetch rating distribution:', error);
-            // Fallback to simulated backend on error
-            console.log('Falling back to simulated backend due to error');
-            return await simulatedBackend.getRatingDistribution();        }
+            console.error('Failed to fetch rating distribution:', error);            // Fallback to local backend on error
+            console.log('Falling back to local backend due to error');
+            return await localBackend.ratingChart.getRatingDistribution();        }
     }
 };
 

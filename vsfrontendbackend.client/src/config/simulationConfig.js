@@ -1,22 +1,19 @@
 // Configuration for simulation mode
 // This allows switching between real server and simulated backend
 
-class SimulationConfig {
-    constructor() {
-        // Default to simulation mode if server is not available
+class SimulationConfig {    constructor() {
+        // Default to simulation mode on by default
         this.simulationMode = this.getStoredPreference();
         this.forceSimulation = false; // Can be set to always use simulation
         this.callbacks = new Set();
-    }
-
-    // Get stored preference from localStorage
+    }// Get stored preference from localStorage
     getStoredPreference() {
         try {
             const stored = localStorage.getItem('simulationMode');
-            return stored ? JSON.parse(stored) : false;
+            return stored ? JSON.parse(stored) : true; // Default to true (simulation mode on)
         } catch (error) {
             console.warn('Error reading simulation mode preference:', error);
-            return false;
+            return true; // Default to true on error
         }
     }
 
@@ -39,7 +36,6 @@ class SimulationConfig {
         this.simulationMode = true;
         this.storePreference(true);
         this.notifyCallbacks();
-        console.log('Simulation mode enabled');
     }
 
     // Disable simulation mode (use real server)
@@ -47,7 +43,6 @@ class SimulationConfig {
         this.simulationMode = false;
         this.storePreference(false);
         this.notifyCallbacks();
-        console.log('Simulation mode disabled - using real server');
     }
 
     // Toggle simulation mode
@@ -58,13 +53,6 @@ class SimulationConfig {
             this.enableSimulation();
         }
         return this.simulationMode;
-    }
-
-    // Force simulation mode (for development/testing)
-    setForceSimulation(force) {
-        this.forceSimulation = force;
-        this.notifyCallbacks();
-        console.log(`Force simulation mode: ${force}`);
     }
 
     // Subscribe to simulation mode changes

@@ -32,11 +32,10 @@ class WebSocketService {
 		// Subscribe to simulation mode changes
 		simulationConfig.subscribe((isSimulation) => {
 			console.log(`WebSocket simulation mode changed: ${isSimulation}`);
-			this.useSimulation = isSimulation;
-			if (isSimulation && this.isConnected) {
-				// Switch to simulation mode
-				this.closeConnection();
-				this.connectSimulated();			} else if (!isSimulation && this.offlineService.isConnected()) {
+			this.useSimulation = isSimulation;		if (isSimulation && this.isConnected) {
+			// Switch to simulation mode
+			this.closeConnection();
+			this.connectOffline();} else if (!isSimulation && this.offlineService.isConnected()) {
 				// Switch to real mode
 				this.offlineService.disconnect();
 				this.connect();
@@ -47,11 +46,10 @@ class WebSocketService {
 		this.useSimulation = simulationConfig.isSimulationMode();
 	}
 	// Initialize the WebSocket connection
-	connect() {
-		// Use simulated service if in simulation mode
+	connect() {		// Use offline service if in simulation mode
 		if (this.useSimulation) {
-			console.log('Using simulated WebSocket service');
-			return this.connectSimulated();
+			console.log('Using offline WebSocket service');
+			return this.connectOffline();
 		}
 
 		// Don't try to connect if already connecting
@@ -270,12 +268,11 @@ class WebSocketService {
 				console.error('Error sending ping:', error);
 			}
 		}
-	}
-	// Properly close the WebSocket connection
+	}	// Properly close the WebSocket connection
 	closeConnection() {
-		// Close simulated service if using simulation
-		if (this.useSimulation && this.simulatedService) {
-			this.simulatedService.disconnect();
+		// Close offline service if using simulation
+		if (this.useSimulation && this.offlineService) {
+			this.offlineService.disconnect();
 			return;
 		}
 
@@ -302,13 +299,12 @@ class WebSocketService {
 			this.ws = null;
 			this._closeSocket(currentSocket);
 		}
-	}
-	// Send a command to the WebSocket server
+	}	// Send a command to the WebSocket server
 	sendCommand(action) {
-		// Use simulated service if in simulation mode
-		if (this.useSimulation && this.simulatedService) {
-			console.log('Sending command to simulated service:', action);
-			this.simulatedService.sendCommand(action);
+		// Use offline service if in simulation mode
+		if (this.useSimulation && this.offlineService) {
+			console.log('Sending command to offline service:', action);
+			this.offlineService.sendCommand(action);
 			return;
 		}
 
@@ -383,30 +379,28 @@ class WebSocketService {
 	// Notify all generation state change callbacks
 	notifyGenerationStateChange() {
 		this.generationStateChangeCallbacks.forEach(callback => callback(this.isGenerating));
-	}
-	// Get the current connection state
+	}	// Get the current connection state
 	getConnectionState() {
-		if (this.useSimulation && this.simulatedService) {
-			return this.simulatedService.isConnected();
+		if (this.useSimulation && this.offlineService) {
+			return this.offlineService.getConnectionStatus().isConnected;
 		}
 		return this.isConnected;
 	}
 
 	// Get the current generation state
 	getGenerationState() {
-		if (this.useSimulation && this.simulatedService) {
-			return this.simulatedService.isGenerating();
+		if (this.useSimulation && this.offlineService) {
+			return this.offlineService.getConnectionStatus().isGenerating;
 		}
 		return this.isGenerating;
-	}
-	// Clean up all resources - should be called when application unmounts
+	}	// Clean up all resources - should be called when application unmounts
 	cleanup() {
 		console.log(`Cleaning up WebSocketService instance #${this.instanceId}`);
 		this.closeConnection();
 		
-		// Clean up simulated service
-		if (this.simulatedService) {
-			this.simulatedService.disconnect();
+		// Clean up offline service
+		if (this.offlineService) {
+			this.offlineService.disconnect();
 		}
 		
 		// Clear all handlers and callbacks
