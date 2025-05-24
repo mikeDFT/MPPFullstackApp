@@ -1,12 +1,17 @@
 //import { env } from 'process';
 import { getOnLineStatus } from '../utils/OnlineChecker';
 import { SERVER_HTTP_URL } from '../config';
+import simulationConfig from '../config/simulationConfig';
+import SimulatedBackend from './simulatedBackend';
 
 // Get the API URL from environment variables or use default
 // shamelessly stolen from vite.config.js
 const env = import.meta.env;
 const API_BASE_URL = env.ASPNETCORE_HTTPS_PORT ? `${SERVER_HTTP_URL}:${env.ASPNETCORE_HTTPS_PORT}` :
     env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : SERVER_HTTP_URL;
+
+// Initialize simulated backend
+const simulatedBackend = new SimulatedBackend();
 
 // Track server status
 let isServerUp = true;
@@ -102,6 +107,11 @@ const canMakeRequest = () => {
     return isServerUp && getOnLineStatus();
 };
 
+// Helper function to determine if we should use simulated backend
+const shouldUseSimulation = () => {
+    return simulationConfig.isSimulationMode() || !canMakeRequest();
+};
+
 async function handleResponse(response) {
     if (!response.ok) {
         isServerUp = false;
@@ -181,10 +191,14 @@ if (typeof window !== 'undefined') {
 export const apiService = {
     // polling interval in milliseconds (4 seconds) - I will update the game list every 4 seconds
     POLLING_INTERVAL: 10000,
-    INITIAL_REFRESH_TIME: 300,
-
-    // Fetch all games
+    INITIAL_REFRESH_TIME: 300,    // Fetch all games
     getAllGames: async (params) => {
+        // Use simulated backend if in simulation mode or server is unavailable
+        if (shouldUseSimulation()) {
+            console.log('Using simulated backend for getAllGames');
+            return await simulatedBackend.getAllGames(params);
+        }
+
         const executeRequest = async () => {
             const queryParams = new URLSearchParams();
             
@@ -230,14 +244,18 @@ export const apiService = {
             return await executeRequest();
         } catch (error) {
             console.error('Failed to fetch games:', error);
-            // Return data from localStorage on error
-            const savedGames = localStorage.getItem('gamesInfo');
-            return savedGames ? JSON.parse(savedGames) : [];
+            // Fallback to simulated backend on error
+            console.log('Falling back to simulated backend due to error');
+            return await simulatedBackend.getAllGames(params);
         }
-    },
-
-    // Fetch a single game
+    },    // Fetch a single game
     getGame: async (id) => {
+        // Use simulated backend if in simulation mode or server is unavailable
+        if (shouldUseSimulation()) {
+            console.log('Using simulated backend for getGame');
+            return await simulatedBackend.getGameById(id);
+        }
+
         const executeRequest = async () => {
             const response = await fetch(`${API_BASE_URL}/game/${id}`);
             var game = await handleResponse(response);
@@ -269,12 +287,19 @@ export const apiService = {
             return await executeRequest();
         } catch (error) {
             console.error('Failed to fetch game:', error);
-            throw error;
+            // Fallback to simulated backend on error
+            console.log('Falling back to simulated backend due to error');
+            return await simulatedBackend.getGameById(id);
         }
     },
-    
-    // Add new game or update an already existing one
+      // Add new game or update an already existing one
     modifyGame: async (game) => {
+        // Use simulated backend if in simulation mode or server is unavailable
+        if (shouldUseSimulation()) {
+            console.log('Using simulated backend for modifyGame');
+            return await simulatedBackend.createOrUpdateGame(game);
+        }
+
         const executeRequest = async () => {
             const response = await fetch(`${API_BASE_URL}/game`, {
                 method: 'POST',
@@ -294,10 +319,14 @@ export const apiService = {
             console.error('Failed to modify game:', error);
             throw error;
         }
-    },
-
-    // Delete game
+    },    // Delete game
     deleteGame: async (id) => {
+        // Use simulated backend if in simulation mode or server is unavailable
+        if (shouldUseSimulation()) {
+            console.log('Using simulated backend for deleteGame');
+            return await simulatedBackend.deleteGame(id);
+        }
+
         const executeRequest = async () => {
             const response = await fetch(`${API_BASE_URL}/game/${id}`, {
                 method: 'DELETE'
@@ -315,10 +344,14 @@ export const apiService = {
             console.error('Failed to delete game:', error);
             throw error;
         }
-    },
-
-    // Fetch all companies
+    },    // Fetch all companies
     getAllCompanies: async (params) => {
+        // Use simulated backend if in simulation mode or server is unavailable
+        if (shouldUseSimulation()) {
+            console.log('Using simulated backend for getAllCompanies');
+            return await simulatedBackend.getAllCompanies(params);
+        }
+
         const executeRequest = async () => {
             const queryParams = new URLSearchParams();
             
@@ -340,14 +373,18 @@ export const apiService = {
             return await executeRequest();
         } catch (error) {
             console.error('Failed to fetch companies:', error);
-            // Return data from localStorage on error
-            const savedCompanies = localStorage.getItem('companiesInfo');
-            return savedCompanies ? JSON.parse(savedCompanies) : [];
+            // Fallback to simulated backend on error
+            console.log('Falling back to simulated backend due to error');
+            return await simulatedBackend.getAllCompanies(params);
         }
-    },
-
-    // Fetch a single company
+    },    // Fetch a single company
     getCompany: async (id) => {
+        // Use simulated backend if in simulation mode or server is unavailable
+        if (shouldUseSimulation()) {
+            console.log('Using simulated backend for getCompany');
+            return await simulatedBackend.getCompanyById(id);
+        }
+
         const executeRequest = async () => {
             const response = await fetch(`${API_BASE_URL}/company/${id}`);
             return await handleResponse(response);
@@ -367,12 +404,19 @@ export const apiService = {
             return await executeRequest();
         } catch (error) {
             console.error('Failed to fetch company:', error);
-            throw error;
+            // Fallback to simulated backend on error
+            console.log('Falling back to simulated backend due to error');
+            return await simulatedBackend.getCompanyById(id);
         }
     },
-    
-    // Add new company or update an already existing one
+      // Add new company or update an already existing one
     modifyCompany: async (company) => {
+        // Use simulated backend if in simulation mode or server is unavailable
+        if (shouldUseSimulation()) {
+            console.log('Using simulated backend for modifyCompany');
+            return await simulatedBackend.createOrUpdateCompany(company);
+        }
+
         const executeRequest = async () => {
             const response = await fetch(`${API_BASE_URL}/company`, {
                 method: 'POST',
@@ -392,10 +436,14 @@ export const apiService = {
             console.error('Failed to modify company:', error);
             throw error;
         }
-    },
-
-    // Delete company
+    },    // Delete company
     deleteCompany: async (id) => {
+        // Use simulated backend if in simulation mode or server is unavailable
+        if (shouldUseSimulation()) {
+            console.log('Using simulated backend for deleteCompany');
+            return await simulatedBackend.deleteCompany(id);
+        }
+
         const executeRequest = async () => {
             const response = await fetch(`${API_BASE_URL}/company/${id}`, {
                 method: 'DELETE'
@@ -413,10 +461,14 @@ export const apiService = {
             console.error('Failed to delete company:', error);
             throw error;
         }
-    },
-
-    // File upload and download methods
+    },    // File upload and download methods
     uploadFile: async (file) => {
+        // Use simulated backend if in simulation mode or server is unavailable
+        if (shouldUseSimulation()) {
+            console.log('Using simulated backend for uploadFile');
+            return await simulatedBackend.uploadFile(file);
+        }
+
         const formData = new FormData();
         // formData.append('file', file);
         formData.append('file', file);
@@ -438,11 +490,17 @@ export const apiService = {
             return await json;
         } catch (error) {
             console.error('Error uploading file:', error);
-            throw error;
+            // Fallback to simulated backend on error
+            console.log('Falling back to simulated backend due to error');
+            return await simulatedBackend.uploadFile(file);
         }
-    },
+    },    downloadFile: async () => {
+        // Use simulated backend if in simulation mode or server is unavailable
+        if (shouldUseSimulation()) {
+            console.log('Using simulated backend for downloadFile');
+            return await simulatedBackend.downloadFile();
+        }
 
-    downloadFile: async () => {
         try {
             const response = await fetch(`${API_BASE_URL}/files/download`);
 
@@ -478,11 +536,17 @@ export const apiService = {
             return { blob, filename, contentType };
         } catch (error) {
             console.error('Error downloading file:', error);
-            throw error;
+            // Fallback to simulated backend on error
+            console.log('Falling back to simulated backend due to error');
+            return await simulatedBackend.downloadFile();
         }
-    },
+    },    checkFileExists: async () => {
+        // Use simulated backend if in simulation mode or server is unavailable
+        if (shouldUseSimulation()) {
+            console.log('Using simulated backend for checkFileExists');
+            return await simulatedBackend.checkFileExists();
+        }
 
-    checkFileExists: async () => {
         try {
             const response = await fetch(`${API_BASE_URL}/files/exists`);
             
@@ -494,12 +558,18 @@ export const apiService = {
             return data.exists;
         } catch (error) {
             console.error('Error checking if file exists:', error);
-            return false;
+            // Fallback to simulated backend on error
+            console.log('Falling back to simulated backend due to error');
+            return await simulatedBackend.checkFileExists();
         }
-    },
-
-    // Get rating distribution data
+    },    // Get rating distribution data
     getRatingDistribution: async () => {
+        // Use simulated backend if in simulation mode or server is unavailable
+        if (shouldUseSimulation()) {
+            console.log('Using simulated backend for getRatingDistribution');
+            return await simulatedBackend.getRatingDistribution();
+        }
+
         const executeRequest = async () => {
             const response = await fetch(`${API_BASE_URL}/ratingchart`);
             return await handleResponse(response);
@@ -519,14 +589,15 @@ export const apiService = {
             return await executeRequest();
         } catch (error) {
             console.error('Failed to fetch rating distribution:', error);
-            // Return data from localStorage on error
-            const savedRatingData = localStorage.getItem('ratingDistribution');
-            return savedRatingData ? JSON.parse(savedRatingData) : {
-                "1-2": 0,
-                "2-3": 0,
-                "3-4": 0,
-                "4-5": 0
-            };
-        }
+            // Fallback to simulated backend on error
+            console.log('Falling back to simulated backend due to error');
+            return await simulatedBackend.getRatingDistribution();        }
     }
 };
+
+// Export simulation configuration for external use
+export { simulationConfig };
+export const enableSimulationMode = () => simulationConfig.enableSimulation();
+export const disableSimulationMode = () => simulationConfig.disableSimulation();
+export const toggleSimulationMode = () => simulationConfig.toggle();
+export const isSimulationModeActive = () => simulationConfig.isSimulationMode();

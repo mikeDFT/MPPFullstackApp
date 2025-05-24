@@ -13,6 +13,7 @@ import MainPage from "./pages/MainPage.jsx";
 import ViewPage from "./pages/ViewPage.jsx";
 import ModifyPage from "./pages/ModifyPage.jsx";
 import { DataProvider } from "./context/DataContext";
+import SimulationControl from "./components/SimulationControl.jsx";
 
 
 createRoot(document.getElementById('root')).render(
@@ -28,6 +29,7 @@ createRoot(document.getElementById('root')).render(
                         {/*<Route path="/gamble" element={<MainPage />} />*/}
                     </Routes>
                     <NavigationButtomBar />
+                    <SimulationControl />
                 </div>
             </Router>
         </DataProvider>

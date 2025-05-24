@@ -3,12 +3,18 @@ let instanceCounter = 0;
 
 // Import configuration
 import { SERVER_IP, SERVER_HTTP_PORT } from '../config';
+import simulationConfig from '../config/simulationConfig';
+import SimulatedWebSocketService from './simulatedWebSocketService';
 
 // WebSocket service to handle all WebSocket connections and logic
 class WebSocketService {
 	constructor() {
 		this.instanceId = ++instanceCounter;
 		console.log(`Creating WebSocketService instance #${this.instanceId}`);
+		
+		// Initialize simulated service
+		this.simulatedService = new SimulatedWebSocketService();
+		this.useSimulation = false;
 		
 		this.ws = null;
 		this.isConnected = false;
@@ -23,10 +29,33 @@ class WebSocketService {
 		this.isConnecting = false; // flag to prevent multiple connect attempts
 		this.connectionDebounceTimeout = null; // debounce repeated connection attempts
 		this.lastConnectionAttemptTime = 0; // track last connection attempt time
-	}
 
+		// Subscribe to simulation mode changes
+		simulationConfig.subscribe((isSimulation) => {
+			console.log(`WebSocket simulation mode changed: ${isSimulation}`);
+			this.useSimulation = isSimulation;
+			if (isSimulation && this.isConnected) {
+				// Switch to simulation mode
+				this.closeConnection();
+				this.connectSimulated();
+			} else if (!isSimulation && this.simulatedService.isConnected()) {
+				// Switch to real mode
+				this.simulatedService.disconnect();
+				this.connect();
+			}
+		});
+
+		// Initialize simulation state
+		this.useSimulation = simulationConfig.isSimulationMode();
+	}
 	// Initialize the WebSocket connection
 	connect() {
+		// Use simulated service if in simulation mode
+		if (this.useSimulation) {
+			console.log('Using simulated WebSocket service');
+			return this.connectSimulated();
+		}
+
 		// Don't try to connect if already connecting
 		if (this.isConnecting) {
 			console.log('Already attempting to connect, ignoring request');
@@ -159,8 +188,48 @@ class WebSocketService {
 			this.reconnectTimeout = setTimeout(() => {
 				console.log('Attempting to reconnect after error...');
 				this.connect();
-			}, 3000 + (this.reconnectAttempts * 1000));
-		}
+			}, 3000 + (this.reconnectAttempts * 1000));		}
+	}
+
+	// Connect using simulated WebSocket service
+	connectSimulated() {
+		console.log('Connecting to simulated WebSocket service');
+		
+		// Set up simulated service callbacks to mirror real WebSocket behavior
+		this.simulatedService.onConnectionChange = (connected) => {
+			this.isConnected = connected;
+			this.connectionChangeCallbacks.forEach(callback => {
+				try {
+					callback(connected);
+				} catch (error) {
+					console.error('Error in connection change callback:', error);
+				}
+			});
+		};
+
+		this.simulatedService.onGenerationStateChange = (generating) => {
+			this.isGenerating = generating;
+			this.generationStateChangeCallbacks.forEach(callback => {
+				try {
+					callback(generating);
+				} catch (error) {
+					console.error('Error in generation state change callback:', error);
+				}
+			});
+		};
+
+		this.simulatedService.onMessage = (message) => {
+			// Process messages through the same handler system as real WebSocket
+			const handler = this.messageHandlers.get(message.action);
+			if (handler) {
+				handler(message);
+			} else {
+				console.log('No handler for simulated message type:', message.action);
+			}
+		};
+
+		// Connect the simulated service
+		this.simulatedService.connect();
 	}
 
 	// Helper method to safely close a socket
@@ -205,9 +274,14 @@ class WebSocketService {
 			}
 		}
 	}
-
 	// Properly close the WebSocket connection
 	closeConnection() {
+		// Close simulated service if using simulation
+		if (this.useSimulation && this.simulatedService) {
+			this.simulatedService.disconnect();
+			return;
+		}
+
 		// Clear ping interval
 		if (this.pingInterval) {
 			clearInterval(this.pingInterval);
@@ -232,9 +306,15 @@ class WebSocketService {
 			this._closeSocket(currentSocket);
 		}
 	}
-
 	// Send a command to the WebSocket server
 	sendCommand(action) {
+		// Use simulated service if in simulation mode
+		if (this.useSimulation && this.simulatedService) {
+			console.log('Sending command to simulated service:', action);
+			this.simulatedService.sendCommand(action);
+			return;
+		}
+
 		if (this.ws && this.ws.readyState === WebSocket.OPEN) {
 			const command = {
 				action: action,
@@ -307,21 +387,30 @@ class WebSocketService {
 	notifyGenerationStateChange() {
 		this.generationStateChangeCallbacks.forEach(callback => callback(this.isGenerating));
 	}
-
 	// Get the current connection state
 	getConnectionState() {
+		if (this.useSimulation && this.simulatedService) {
+			return this.simulatedService.isConnected();
+		}
 		return this.isConnected;
 	}
 
 	// Get the current generation state
 	getGenerationState() {
+		if (this.useSimulation && this.simulatedService) {
+			return this.simulatedService.isGenerating();
+		}
 		return this.isGenerating;
 	}
-
 	// Clean up all resources - should be called when application unmounts
 	cleanup() {
 		console.log(`Cleaning up WebSocketService instance #${this.instanceId}`);
 		this.closeConnection();
+		
+		// Clean up simulated service
+		if (this.simulatedService) {
+			this.simulatedService.disconnect();
+		}
 		
 		// Clear all handlers and callbacks
 		this.messageHandlers.clear();

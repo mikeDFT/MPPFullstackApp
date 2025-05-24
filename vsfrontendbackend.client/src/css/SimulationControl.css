@@ -1,0 +1,211 @@
+/* Simulation Control Component Styles */
+.simulation-control {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 200px;
+    backdrop-filter: blur(10px);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.simulation-toggle {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 10px;
+}
+
+.toggle-input {
+    display: none;
+}
+
+.toggle-slider {
+    position: relative;
+    width: 50px;
+    height: 25px;
+    background-color: #ccc;
+    border-radius: 25px;
+    transition: background-color 0.3s;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    background-color: white;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-input:checked + .toggle-slider {
+    background-color: #4CAF50;
+}
+
+.toggle-input:checked + .toggle-slider::before {
+    transform: translateX(25px);
+}
+
+.toggle-text {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.simulation-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 5px 0;
+}
+
+.status-indicator {
+    font-size: 16px;
+}
+
+.status-text {
+    font-size: 12px;
+    color: #666;
+}
+
+.status-indicator.simulation {
+    color: #4CAF50;
+}
+
+.status-indicator.server {
+    color: #2196F3;
+}
+
+.details-button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 5px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.details-button:hover {
+    background-color: #f0f0f0;
+}
+
+.simulation-details {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+    max-width: 300px;
+}
+
+.simulation-details h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.simulation-details h5 {
+    margin: 15px 0 8px 0;
+    color: #333;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.details-grid {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: #555;
+    font-size: 12px;
+    min-width: 80px;
+}
+
+.detail-value {
+    font-size: 12px;
+    color: #333;
+    text-align: right;
+    flex: 1;
+}
+
+.simulation-benefits ul {
+    margin: 0;
+    padding-left: 15px;
+    font-size: 12px;
+    color: #555;
+}
+
+.simulation-benefits li {
+    margin-bottom: 3px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .simulation-control {
+        background: rgba(40, 40, 40, 0.95);
+        border-color: #555;
+        color: #fff;
+    }
+
+    .toggle-text,
+    .simulation-details h4,
+    .simulation-details h5,
+    .detail-value {
+        color: #fff;
+    }
+
+    .status-text,
+    .detail-label,
+    .simulation-benefits li {
+        color: #ccc;
+    }
+
+    .details-button:hover {
+        background-color: #555;
+    }
+
+    .simulation-details {
+        border-top-color: #555;
+    }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .simulation-control {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin: 10px;
+        width: auto;
+    }
+
+    .simulation-details {
+        max-width: none;
+    }
+}
