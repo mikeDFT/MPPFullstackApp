@@ -1,9 +1,9 @@
-// Simulated WebSocket Service
-// This simulates the WebSocket functionality for real-time game generation
+// Offline WebSocket Service
+// This provides WebSocket functionality for offline/local mode
 
-import { simulatedBackend } from './simulatedBackend.js';
+import localBackend from './simulatedBackend.js';
 
-class SimulatedWebSocketService {
+class OfflineWebSocketService {
     constructor() {
         this.isConnected = false;
         this.isGenerating = false;
@@ -14,23 +14,22 @@ class SimulatedWebSocketService {
         this.connectionId = null;
         this.pingInterval = null;
         
-        // Simulate connection delay
-        this.connectionDelay = 100; // ms
+        // Connection configuration        this.connectionDelay = 100; // ms
         this.messageDelay = 50; // ms
         this.generationInterval = 2000; // Generate a game every 2 seconds
     }
 
-    // Initialize the simulated WebSocket connection
+    // Initialize the WebSocket connection
     async connect() {
-        console.log('Simulated WebSocket: Attempting to connect...');
+        console.log('WebSocket: Attempting to connect...');
         
         // Simulate connection delay
         await new Promise(resolve => setTimeout(resolve, this.connectionDelay));
         
         this.isConnected = true;
-        this.connectionId = 'simulated-' + Date.now();
+        this.connectionId = 'offline-' + Date.now();
         
-        console.log('Simulated WebSocket: Connected successfully');
+        console.log('WebSocket: Connected successfully');
         this.notifyConnectionChange();
         
         // Start ping interval to simulate keep-alive
@@ -42,17 +41,15 @@ class SimulatedWebSocketService {
                 action: 'connected',
                 data: JSON.stringify({
                     connectionId: this.connectionId,
-                    message: 'Successfully connected to simulated WebSocket'
+                    message: 'Successfully connected to WebSocket'
                 })
             });
         }, this.messageDelay);
         
         return true;
-    }
-
-    // Close the simulated connection
+    }    // Close the connection
     disconnect() {
-        console.log('Simulated WebSocket: Disconnecting...');
+        console.log('WebSocket: Disconnecting...');
         
         this.stopGeneration();
         this.stopPingInterval();
@@ -60,18 +57,16 @@ class SimulatedWebSocketService {
         this.isConnected = false;
         this.connectionId = null;
         
-        console.log('Simulated WebSocket: Disconnected');
+        console.log('WebSocket: Disconnected');
         this.notifyConnectionChange();
-    }
-
-    // Send a command to the simulated server
+    }    // Send a command to the server
     async sendCommand(action, data = '') {
         if (!this.isConnected) {
-            console.warn('Simulated WebSocket: Cannot send command, not connected');
+            console.warn('WebSocket: Cannot send command, not connected');
             return false;
         }
 
-        console.log(`Simulated WebSocket: Sending command: ${action}`);
+        console.log(`WebSocket: Sending command: ${action}`);
         
         // Simulate message processing delay
         await new Promise(resolve => setTimeout(resolve, this.messageDelay));
@@ -85,9 +80,8 @@ class SimulatedWebSocketService {
                 break;
             case 'ping':
                 await this.handlePingCommand();
-                break;
-            default:
-                console.warn(`Simulated WebSocket: Unknown command: ${action}`);
+                break;            default:
+                console.warn(`WebSocket: Unknown command: ${action}`);
                 this.simulateMessage({
                     action: 'error',
                     data: JSON.stringify({
@@ -103,7 +97,7 @@ class SimulatedWebSocketService {
     // Handle start generation command
     async handleStartCommand() {
         if (this.isGenerating) {
-            console.log('Simulated WebSocket: Generation already running');
+            console.log('WebSocket: Generation already running');
             return;
         }
 
@@ -126,7 +120,7 @@ class SimulatedWebSocketService {
     // Handle stop generation command
     async handleStopCommand() {
         if (!this.isGenerating) {
-            console.log('Simulated WebSocket: Generation not running');
+            console.log('WebSocket: Generation not running');
             return;
         }
 
@@ -166,7 +160,7 @@ class SimulatedWebSocketService {
             }
         }, this.generationInterval);
         
-        console.log('Simulated WebSocket: Started generation loop');
+        console.log('WebSocket: Started generation loop');
     }
 
     // Stop game generation
@@ -179,14 +173,14 @@ class SimulatedWebSocketService {
             this.generationInterval = null;
         }
         
-        console.log('Simulated WebSocket: Stopped generation');
+        console.log('WebSocket: Stopped generation');
     }
 
     // Generate and send a new game
     generateAndSendGame() {
         try {
             // Generate a new game using the simulated backend
-            const newGame = simulatedBackend.games.generateRandomGame();
+            const newGame = localBackend.games.generateRandomGame();
             
             // Convert to DTO format for consistency with real server
             const gameDto = {
@@ -208,9 +202,9 @@ class SimulatedWebSocketService {
                 data: JSON.stringify(gameDto)
             });
             
-            console.log(`Simulated WebSocket: Generated and sent game: ${newGame.Name}`);
+            console.log(`WebSocket: Generated and sent game: ${newGame.Name}`);
         } catch (error) {
-            console.error('Simulated WebSocket: Error generating game:', error);
+            console.error('WebSocket: Error generating game:', error);
             
             this.simulateMessage({
                 action: 'error',
@@ -260,10 +254,10 @@ class SimulatedWebSocketService {
                 try {
                     handler(message);
                 } catch (error) {
-                    console.error(`Simulated WebSocket: Error in message handler for ${message.action}:`, error);
+                    console.error(`WebSocket: Error in message handler for ${message.action}:`, error);
                 }
             } else {
-                console.log(`Simulated WebSocket: No handler for message action: ${message.action}`);
+                console.log(`WebSocket: No handler for message action: ${message.action}`);
             }
         }, Math.random() * 20 + 10); // 10-30ms delay
     }
@@ -310,7 +304,7 @@ class SimulatedWebSocketService {
             try {
                 callback(this.isConnected);
             } catch (error) {
-                console.error('Simulated WebSocket: Error in connection change callback:', error);
+                console.error('WebSocket: Error in connection change callback:', error);
             }
         });
     }
@@ -363,6 +357,6 @@ class SimulatedWebSocketService {
 }
 
 // Create singleton instance
-const simulatedWebSocketService = new SimulatedWebSocketService();
+const offlineWebSocketService = new OfflineWebSocketService();
 
-export { simulatedWebSocketService };
+export { offlineWebSocketService };

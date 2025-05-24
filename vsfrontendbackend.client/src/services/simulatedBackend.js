@@ -281,11 +281,10 @@ const localBackend = {
     },
 
     // Game endpoints
-    games: {
-        getAll: async (params = {}) => {
+    games: {        getAll: async (params = {}) => {
             await simulateDelay();
             
-            const filteredGames = filterAndSortGames(simulatedData.games, params);
+            const filteredGames = filterAndSortGames(localData.games, params);
             const gamesWithCompanies = filteredGames.map(addCompanyToGame);
             
             logAction("GetGames", `Retrieved ${gamesWithCompanies.length} games with filter: ${JSON.stringify(params)}`);
@@ -302,12 +301,10 @@ const localBackend = {
                 companyID: game.CompanyID,
                 companyName: game.CompanyName || ""
             }));
-        },
-
-        getById: async (id) => {
+        },        getById: async (id) => {
             await simulateDelay();
             
-            const game = simulatedData.games.find(g => g.Id === id);
+            const game = localData.games.find(g => g.Id === id);
             if (!game) {
                 logAction("GetGameById", `Game with ID ${id} not found`, "404 Not Found");
                 throw new Error(`Game with ID ${id} not found`);
@@ -352,23 +349,21 @@ const localBackend = {
             }
 
             const isUpdate = game.Id !== 0;
-            let resultGame;
-
-            if (isUpdate) {
+            let resultGame;            if (isUpdate) {
                 // Update existing game
-                const index = simulatedData.games.findIndex(g => g.Id === game.Id);
+                const index = localData.games.findIndex(g => g.Id === game.Id);
                 if (index === -1) {
                     logAction("UpdateGame", `Game with ID ${game.Id} not found`, "404 Not Found");
                     throw new Error(`Game with ID ${game.Id} not found`);
                 }
                 
-                simulatedData.games[index] = { ...simulatedData.games[index], ...game };
-                resultGame = simulatedData.games[index];
+                localData.games[index] = { ...localData.games[index], ...game };
+                resultGame = localData.games[index];
                 logAction("UpdateGame", `Updated game: ${game.Name} (ID: ${game.Id})`);
             } else {
                 // Add new game
-                game.Id = simulatedData.nextGameId++;
-                simulatedData.games.push(game);
+                game.Id = localData.nextGameId++;
+                localData.games.push(game);
                 resultGame = game;
                 logAction("CreateGame", `Created game: ${game.Name} (ID: ${game.Id})`);
             }
@@ -388,28 +383,24 @@ const localBackend = {
                 companyID: gameWithCompany.CompanyID,
                 companyName: gameWithCompany.CompanyName || ""
             };
-        },
-
-        delete: async (id) => {
+        },        delete: async (id) => {
             await simulateDelay();
             
-            const index = simulatedData.games.findIndex(g => g.Id === id);
+            const index = localData.games.findIndex(g => g.Id === id);
             if (index === -1) {
                 logAction("DeleteGame", `Game with ID ${id} not found`, "404 Not Found");
                 throw new Error(`Game with ID ${id} not found`);
             }
             
-            const deletedGame = simulatedData.games.splice(index, 1)[0];
+            const deletedGame = localData.games.splice(index, 1)[0];
             updateRatingDistribution();
             logAction("DeleteGame", `Deleted game with ID: ${id}`);
             
             return { success: true, status: 200 };
-        },
-
-        // Game generation for WebSocket
+        },        // Game generation for WebSocket
         generateRandomGame: () => {
             const game = {
-                Id: simulatedData.nextGameId++,
+                Id: localData.nextGameId++,
                 Name: gameNames[Math.floor(Math.random() * gameNames.length)] + " " + Math.floor(Math.random() * 1000),
                 Price: Math.floor(Math.random() * 60) + 0.99,
                 Rating: Number((Math.floor(Math.random() * 10) / 10 * 4.5 + 1).toFixed(1)),
@@ -417,24 +408,22 @@ const localBackend = {
                 IconID: "game_icon_" + Math.floor(Math.random() * 100),
                 Genres: [gameGenres[Math.floor(Math.random() * gameGenres.length)]],
                 Platforms: [gamePlatforms[Math.floor(Math.random() * gamePlatforms.length)]],
-                CompanyID: simulatedData.companies.length > 0 ? 
-                    simulatedData.companies[Math.floor(Math.random() * simulatedData.companies.length)].Id : -1
+                CompanyID: localData.companies.length > 0 ? 
+                    localData.companies[Math.floor(Math.random() * localData.companies.length)].Id : -1
             };
 
-            simulatedData.games.push(game);
+            localData.games.push(game);
             updateRatingDistribution();
             logAction("GenerateGame", `Generated new game: ${game.Name} (ID: ${game.Id})`);
             
             return addCompanyToGame(game);
         }
-    },
-
-    // Company endpoints
+    },    // Company endpoints
     companies: {
         getAll: async (params = {}) => {
             await simulateDelay();
             
-            const filteredCompanies = filterAndSortCompanies(simulatedData.companies, params);
+            const filteredCompanies = filterAndSortCompanies(localData.companies, params);
             logAction("GetCompanies", `Retrieved ${filteredCompanies.length} companies with filter: ${JSON.stringify(params)}`);
             
             return filteredCompanies;
@@ -443,7 +432,7 @@ const localBackend = {
         getById: async (id) => {
             await simulateDelay();
             
-            const company = simulatedData.companies.find(c => c.Id === id);
+            const company = localData.companies.find(c => c.Id === id);
             if (!company) {
                 logAction("GetCompanyById", `Company with ID ${id} not found`, "404 Not Found");
                 throw new Error(`Company with ID ${id} not found`);
@@ -461,19 +450,19 @@ const localBackend = {
                 throw new Error("Invalid company data");
             }
 
-            const isUpdate = company.Id !== 0 && simulatedData.companies.find(c => c.Id === company.Id);
+            const isUpdate = company.Id !== 0 && localData.companies.find(c => c.Id === company.Id);
             let resultCompany;
 
             if (isUpdate) {
                 // Update existing company
-                const index = simulatedData.companies.findIndex(c => c.Id === company.Id);
-                simulatedData.companies[index] = { ...simulatedData.companies[index], ...company };
-                resultCompany = simulatedData.companies[index];
+                const index = localData.companies.findIndex(c => c.Id === company.Id);
+                localData.companies[index] = { ...localData.companies[index], ...company };
+                resultCompany = localData.companies[index];
                 logAction("UpdateCompany", `Updated company: ${company.CompanyName} (ID: ${company.Id})`);
             } else {
                 // Add new company
-                company.Id = simulatedData.nextCompanyId++;
-                simulatedData.companies.push(company);
+                company.Id = localData.nextCompanyId++;
+                localData.companies.push(company);
                 resultCompany = company;
                 logAction("CreateCompany", `Created company: ${company.CompanyName} (ID: ${company.Id})`);
             }
@@ -484,16 +473,16 @@ const localBackend = {
         delete: async (id) => {
             await simulateDelay();
             
-            const index = simulatedData.companies.findIndex(c => c.Id === id);
+            const index = localData.companies.findIndex(c => c.Id === id);
             if (index === -1) {
                 logAction("DeleteCompany", `Company with ID ${id} not found`, "404 Not Found");
                 throw new Error(`Company with ID ${id} not found`);
             }
             
-            const deletedCompany = simulatedData.companies.splice(index, 1)[0];
+            const deletedCompany = localData.companies.splice(index, 1)[0];
             
             // Update games that belonged to this company
-            simulatedData.games.forEach(game => {
+            localData.games.forEach(game => {
                 if (game.CompanyID === id) {
                     game.CompanyID = -1;
                 }
@@ -522,15 +511,13 @@ const localBackend = {
                 headers: { "simulated": "true" }
             };
         }
-    },
-
-    // Rating chart endpoint
+    },    // Rating chart endpoint
     ratingChart: {
         getRatingDistribution: async () => {
             await simulateDelay();
             
             logAction("GetRatingDistribution", "Retrieved rating distribution data");
-            return simulatedData.ratingDistribution;
+            return localData.ratingDistribution;
         }
     },
 
@@ -539,7 +526,7 @@ const localBackend = {
         upload: async (file) => {
             await simulateDelay();
             
-            simulatedData.fileStorage = {
+            localData.fileStorage = {
                 hasFile: true,
                 fileName: file.name,
                 fileContent: await file.arrayBuffer(),
@@ -557,17 +544,17 @@ const localBackend = {
         download: async () => {
             await simulateDelay();
             
-            if (!simulatedData.fileStorage.hasFile) {
+            if (!localData.fileStorage.hasFile) {
                 logAction("FileDownload", "No file found on server", "404 Not Found");
                 throw new Error("No file found on server");
             }
             
-            const blob = new Blob([simulatedData.fileStorage.fileContent]);
-            logAction("FileDownload", `Downloaded file: ${simulatedData.fileStorage.fileName}`);
+            const blob = new Blob([localData.fileStorage.fileContent]);
+            logAction("FileDownload", `Downloaded file: ${localData.fileStorage.fileName}`);
             
             return {
                 blob,
-                filename: simulatedData.fileStorage.fileName,
+                filename: localData.fileStorage.fileName,
                 contentType: "application/octet-stream"
             };
         },
@@ -575,28 +562,26 @@ const localBackend = {
         exists: async () => {
             await simulateDelay();
             
-            logAction("FileExists", `File exists check: ${simulatedData.fileStorage.hasFile}`);
+            logAction("FileExists", `File exists check: ${localData.fileStorage.hasFile}`);
             return {
-                exists: simulatedData.fileStorage.hasFile
+                exists: localData.fileStorage.hasFile
             };
         }
-    },
-
-    // Log endpoints (for debugging/monitoring)
+    },    // Log endpoints (for debugging/monitoring)
     logs: {
         getAll: async () => {
             await simulateDelay();
-            return simulatedData.logs;
+            return localData.logs;
         },
 
         getRecent: async (count = 50) => {
             await simulateDelay();
-            return simulatedData.logs.slice(-count);
+            return localData.logs.slice(-count);
         },
 
         clear: async () => {
             await simulateDelay();
-            simulatedData.logs = [];
+            localData.logs = [];
             return { success: true };
         }
     },
@@ -604,19 +589,19 @@ const localBackend = {
     // Data management
     data: {
         export: () => {
-            return JSON.stringify(simulatedData, null, 2);
+            return JSON.stringify(localData, null, 2);
         },
 
         import: (jsonData) => {
             try {
-                simulatedData = JSON.parse(jsonData);
-                console.log("Imported simulated data successfully");
+                localData = JSON.parse(jsonData);
+                console.log("Imported local data successfully");
                 return true;
             } catch (error) {
                 console.error("Failed to import data:", error);
                 return false;
             }
-        },        reset: () => {
+        },reset: () => {
             initializeSampleData();
             console.log("Reset local data to initial state");
         }
