@@ -18,7 +18,7 @@ export const CLIENT_PORT = 80; // Frontend ACI runs on port 80
 // SERVER_HTTP_URL is used by the client to make API calls.
 // For Azure, API calls should be relative to the origin (e.g., '/game', '/api/users').
 // Nginx, configured at runtime with the actual backend FQDN, will proxy these.
-export const SERVER_HTTP_URL = "https://vsfrontendbackend-backend-ggf8amawbgfub6a9.westeurope-01.azurewebsites.net"; // Full Azure backend URL for direct API calls
+export const SERVER_HTTP_URL = "https://mppbackend-bcf5czg8fffqc7ft.germanywestcentral-01.azurewebsites.net/"; // Full Azure backend URL for direct API calls
 
 console.log("[config.azure.js] Azure configuration loaded (used during Azure build).");
 console.log(`[config.azure.js] Build-time VITE_SERVER_IP (from import.meta.env): ${VITE_SERVER_IP_BUILD_TIME}`);

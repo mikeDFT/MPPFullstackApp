@@ -42,9 +42,40 @@ namespace VSFrontendBackend.Server.Controllers
                 filterSortingGamesParams.Genres.RemoveAll((el) => el == null);
 
                 if (filterSortingGamesParams == null)
-                    filterSortingGamesParams = new FilterSortingGamesParams();
-
-                var games = await _gameService.GetAllAsync(filterSortingGamesParams);
+                    filterSortingGamesParams = new FilterSortingGamesParams();                var games = await _gameService.GetAllAsync(filterSortingGamesParams);
+                
+                // Add 2 dummy games if the list is empty
+                if (games.Count == 0)
+                {
+                    games.Add(new Game
+                    {
+                        Id = 1,
+                        CompanyID = -1,
+                        Company = Company.emptyCompany,
+                        Name = "Epic Adventure Quest",
+                        IconID = "adventure_icon",
+                        Price = 29.99,
+                        Rating = 4.5,
+                        Description = "Embark on an epic adventure through mystical lands filled with challenges, treasures, and legendary creatures. Perfect for solo or multiplayer gameplay.",
+                        Genres = new List<string> { "Adventure", "RPG", "Action" },
+                        Platforms = new List<string> { "PC", "Xbox", "PlayStation" }
+                    });
+                    
+                    games.Add(new Game
+                    {
+                        Id = 2,
+                        CompanyID = -1,
+                        Company = Company.emptyCompany,
+                        Name = "Space Commander",
+                        IconID = "space_icon",
+                        Price = 39.99,
+                        Rating = 4.2,
+                        Description = "Command your own spaceship and explore the galaxy in this thrilling space simulation game. Build, trade, and fight your way to becoming the ultimate space commander.",
+                        Genres = new List<string> { "Strategy", "Simulation", "Sci-Fi" },
+                        Platforms = new List<string> { "PC", "Nintendo Switch", "Mobile" }
+                    });
+                }
+                
                 var gameDTOs = GameDTO.FromGameList(games);
                 
                 stopwatch.Stop();
