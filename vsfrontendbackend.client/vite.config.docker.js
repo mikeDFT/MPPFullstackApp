@@ -8,8 +8,8 @@ import { env } from 'process';
 // Import configuration
 import { SERVER_IP, SERVER_HTTP_PORT, CLIENT_PORT } from './src/config.js';
 
-const target = env.ASPNETCORE_HTTPS_PORT ? `http://${SERVER_IP}:${CLIENT_PORT}/:${env.ASPNETCORE_HTTPS_PORT}` :
-    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : `http://${SERVER_IP}:${CLIENT_PORT}/:${SERVER_HTTP_PORT}`;
+const target = env.ASPNETCORE_HTTPS_PORT ? `https://${SERVER_IP}:${env.ASPNETCORE_HTTPS_PORT}` :
+    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : `https://${SERVER_IP}`;
 
 // https://vitejs.dev/config/
 export default defineConfig({

@@ -14,10 +14,10 @@ IIS (Internet Information Services) is Microsoft's web server software for Windo
 The main configuration file is located at `vsfrontendbackend.client/src/config.js`. It contains the following variables that are relevant to the server:
 
 ### Server Configuration
-- `SERVER_IP`: The IP address of the server (default: '192.168.40.178')
+- `SERVER_IP`: The IP address of the server (default: 'vsfrontendbackend-backend-ggf8amawbgfub6a9.westeurope-01.azurewebsites.net')
 
 ### Server Ports
-- `SERVER_HTTP_PORT`: The HTTP port for the server (default: '7299')
+- `SERVER_HTTP_PORT`: The HTTP port for the server (default: '443')
 - `SERVER_IIS_PORT`: The IIS port for the server (default: '33367')
 
 ### Protocol Configuration

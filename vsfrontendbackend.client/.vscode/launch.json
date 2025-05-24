@@ -4,8 +4,8 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "LAN (default browser)",
-      "url": "http://192.168.10.160:53392",
+      "name": "Azure Static Web App",
+      "url": "https://delightful-pebble-081313903.6.azurestaticapps.net",
       "webRoot": "${workspaceFolder}"
     }
   ]

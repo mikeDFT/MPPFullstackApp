@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/6db65d63-400d-4043-ab29-cd307410a459/resourceGroups/appsvc_windows_westeurope_basic/providers/Microsoft.Web/sites/VSFrontendBackend-backend",
+    "appService.deploySubpath": "VSFrontendBackend.Server"
+}

@@ -52,11 +52,12 @@ class WebSocketService {
 		this.isConnecting = true;
 
 		try {
-			// Create new WebSocket connection
-			// The server is running on the configured IP and port
+			// Create new WebSocket connection		// The server is running on the configured IP and port
 			// Use the same protocol as the current page (ws or wss)
 			const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-			const wsUrl = `${protocol}//${SERVER_IP}:${SERVER_HTTP_PORT}/api/GeneratingGames/ws`;
+			// For Azure, don't include port for standard HTTPS (443)
+			const portSuffix = (protocol === 'wss:' && SERVER_HTTP_PORT === 443) || (protocol === 'ws:' && SERVER_HTTP_PORT === 80) ? '' : `:${SERVER_HTTP_PORT}`;
+			const wsUrl = `${protocol}//${SERVER_IP}${portSuffix}/api/GeneratingGames/ws`;
 			console.log('Connecting to WebSocket:', wsUrl);
 			
 			this.ws = new WebSocket(wsUrl);
