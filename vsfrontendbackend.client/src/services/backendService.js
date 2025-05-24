@@ -330,6 +330,9 @@ const initializeDataStore = () => {
     var savedGames = localStorage.getItem('gamesInfo');
     var savedCompanies = localStorage.getItem('companiesInfo');
 
+    savedGames = null;
+    savedCompanies = null;
+
     if (savedCompanies) {
         dataStore.companies = JSON.parse(savedCompanies);
     } else if (dataStore.companies.length === 0) {
