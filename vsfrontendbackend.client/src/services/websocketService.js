@@ -188,13 +188,12 @@ class WebSocketService {
 				this.connect();
 			}, 3000 + (this.reconnectAttempts * 1000));		}
 	}
-
-	// Connect using simulated WebSocket service
-	connectSimulated() {
-		console.log('Connecting to simulated WebSocket service');
+	// Connect using offline WebSocket service
+	connectOffline() {
+		console.log('Connecting to offline WebSocket service');
 		
-		// Set up simulated service callbacks to mirror real WebSocket behavior
-		this.simulatedService.onConnectionChange = (connected) => {
+		// Set up offline service callbacks to mirror real WebSocket behavior
+		this.offlineService.addConnectionChangeCallback((connected) => {
 			this.isConnected = connected;
 			this.connectionChangeCallbacks.forEach(callback => {
 				try {
@@ -203,9 +202,9 @@ class WebSocketService {
 					console.error('Error in connection change callback:', error);
 				}
 			});
-		};
+		});
 
-		this.simulatedService.onGenerationStateChange = (generating) => {
+		this.offlineService.addGenerationStateChangeCallback((generating) => {
 			this.isGenerating = generating;
 			this.generationStateChangeCallbacks.forEach(callback => {
 				try {
@@ -214,20 +213,20 @@ class WebSocketService {
 					console.error('Error in generation state change callback:', error);
 				}
 			});
-		};
+		});
 
-		this.simulatedService.onMessage = (message) => {
+		this.offlineService.addMessageHandler('newGame', (message) => {
 			// Process messages through the same handler system as real WebSocket
 			const handler = this.messageHandlers.get(message.action);
 			if (handler) {
 				handler(message);
 			} else {
-				console.log('No handler for simulated message type:', message.action);
+				console.log('No handler for offline message type:', message.action);
 			}
-		};
+		});
 
-		// Connect the simulated service
-		this.simulatedService.connect();
+		// Connect the offline service
+		this.offlineService.connect();
 	}
 
 	// Helper method to safely close a socket

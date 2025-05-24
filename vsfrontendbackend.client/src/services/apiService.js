@@ -2,7 +2,7 @@
 import { getOnLineStatus } from '../utils/OnlineChecker';
 import { SERVER_HTTP_URL } from '../config';
 import simulationConfig from '../config/simulationConfig';
-import SimulatedBackend from './simulatedBackend';
+import localBackend from './simulatedBackend';
 
 // Get the API URL from environment variables or use default
 // shamelessly stolen from vite.config.js
@@ -10,8 +10,8 @@ const env = import.meta.env;
 const API_BASE_URL = env.ASPNETCORE_HTTPS_PORT ? `${SERVER_HTTP_URL}:${env.ASPNETCORE_HTTPS_PORT}` :
     env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : SERVER_HTTP_URL;
 
-// Initialize simulated backend
-const simulatedBackend = new SimulatedBackend();
+// Initialize local backend
+const localBackendInstance = localBackend;
 
 // Track server status
 let isServerUp = true;
@@ -192,11 +192,10 @@ export const apiService = {
     // polling interval in milliseconds (4 seconds) - I will update the game list every 4 seconds
     POLLING_INTERVAL: 10000,
     INITIAL_REFRESH_TIME: 300,    // Fetch all games
-    getAllGames: async (params) => {
-        // Use simulated backend if in simulation mode or server is unavailable
+    getAllGames: async (params) => {        // Use simulated backend if in simulation mode or server is unavailable
         if (shouldUseSimulation()) {
-            console.log('Using simulated backend for getAllGames');
-            return await simulatedBackend.getAllGames(params);
+            console.log('Using local backend for getAllGames');
+            return await localBackendInstance.games.getAll(params);
         }
 
         const executeRequest = async () => {
@@ -243,17 +242,15 @@ export const apiService = {
             }
             return await executeRequest();
         } catch (error) {
-            console.error('Failed to fetch games:', error);
-            // Fallback to simulated backend on error
-            console.log('Falling back to simulated backend due to error');
-            return await simulatedBackend.getAllGames(params);
+            console.error('Failed to fetch games:', error);            // Fallback to simulated backend on error
+            console.log('Falling back to local backend due to error');
+            return await localBackendInstance.games.getAll(params);
         }
     },    // Fetch a single game
-    getGame: async (id) => {
-        // Use simulated backend if in simulation mode or server is unavailable
+    getGame: async (id) => {        // Use simulated backend if in simulation mode or server is unavailable
         if (shouldUseSimulation()) {
-            console.log('Using simulated backend for getGame');
-            return await simulatedBackend.getGameById(id);
+            console.log('Using local backend for getGame');
+            return await localBackendInstance.games.getById(id);
         }
 
         const executeRequest = async () => {
@@ -286,18 +283,16 @@ export const apiService = {
             }
             return await executeRequest();
         } catch (error) {
-            console.error('Failed to fetch game:', error);
-            // Fallback to simulated backend on error
-            console.log('Falling back to simulated backend due to error');
-            return await simulatedBackend.getGameById(id);
+            console.error('Failed to fetch game:', error);            // Fallback to simulated backend on error
+            console.log('Falling back to local backend due to error');
+            return await localBackendInstance.games.getById(id);
         }
     },
       // Add new game or update an already existing one
-    modifyGame: async (game) => {
-        // Use simulated backend if in simulation mode or server is unavailable
+    modifyGame: async (game) => {        // Use simulated backend if in simulation mode or server is unavailable
         if (shouldUseSimulation()) {
-            console.log('Using simulated backend for modifyGame');
-            return await simulatedBackend.createOrUpdateGame(game);
+            console.log('Using local backend for modifyGame');
+            return await localBackendInstance.games.modify(game);
         }
 
         const executeRequest = async () => {
@@ -320,11 +315,10 @@ export const apiService = {
             throw error;
         }
     },    // Delete game
-    deleteGame: async (id) => {
-        // Use simulated backend if in simulation mode or server is unavailable
+    deleteGame: async (id) => {        // Use simulated backend if in simulation mode or server is unavailable
         if (shouldUseSimulation()) {
-            console.log('Using simulated backend for deleteGame');
-            return await simulatedBackend.deleteGame(id);
+            console.log('Using local backend for deleteGame');
+            return await localBackendInstance.games.delete(id);
         }
 
         const executeRequest = async () => {
