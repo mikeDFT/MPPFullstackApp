@@ -87,8 +87,8 @@ let dataStore = {
 // Initialize with some default data if empty
 const initializeDataStore = () => {
     // Check if we have stored data in localStorage
-    const savedGames = localStorage.getItem('gamesInfo');
-    const savedCompanies = localStorage.getItem('companiesInfo');
+    var savedGames = localStorage.getItem('gamesInfo');
+    var savedCompanies = localStorage.getItem('companiesInfo');
     
     savedGames = null;
     savedCompanies = null;
