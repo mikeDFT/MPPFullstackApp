@@ -77,44 +77,51 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp", corsBuilder => // Renamed builder to corsBuilder to avoid conflict
     {
         var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
-        var azureDeploymentEnv = Environment.GetEnvironmentVariable("AZURE_DEPLOYMENT");
-        var aspnetcoreEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        // var azureDeploymentEnv = Environment.GetEnvironmentVariable("AZURE_DEPLOYMENT");
+        // var aspnetcoreEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
-        logger.LogInformation($"AZURE_DEPLOYMENT environment variable: {azureDeploymentEnv}");
-        logger.LogInformation($"ASPNETCORE_ENVIRONMENT environment variable: {aspnetcoreEnvironment}");
+        // logger.LogInformation($"AZURE_DEPLOYMENT environment variable: {azureDeploymentEnv}");
+        // logger.LogInformation($"ASPNETCORE_ENVIRONMENT environment variable: {aspnetcoreEnvironment}");
 
-        // In Azure (Production), use origins from appsettings.Production.json
-        // For local/dev, allow any origin for simplicity with Docker and local tools.
-        if (string.Equals(azureDeploymentEnv, "true", StringComparison.OrdinalIgnoreCase) || 
-            string.Equals(aspnetcoreEnvironment, "Production", StringComparison.OrdinalIgnoreCase))
-        {
-            logger.LogInformation("Applying Production CORS policy.");
-            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
-            if (allowedOrigins.Length > 0)
-            {
-                logger.LogInformation($"Allowed origins from config: {string.Join(", ", allowedOrigins)}");
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        logger.LogInformation($"Allowed origins from config: {string.Join(", ", allowedOrigins)}");
                 corsBuilder.WithOrigins(allowedOrigins)
                        .AllowAnyHeader()
                        .AllowAnyMethod()
                        .AllowCredentials(); // Allow credentials if your frontend sends them (e.g., for cookies/auth)
-            }
-            else
-            {
-                logger.LogWarning("No CORS origins configured in appsettings.Production.json. Allowing any origin as a fallback.");
-                corsBuilder.AllowAnyOrigin() // Fallback if not configured, though specific origins are better
-                       .AllowAnyHeader()
-                       .AllowAnyMethod();
-            }
-        }
-        else
-        {
-            logger.LogInformation("Applying Development CORS policy (AllowAnyOrigin).");
-            // Development/Docker CORS policy
-            corsBuilder.SetIsOriginAllowed(_ => true) // More permissive for local dev
-                   .AllowAnyHeader()
-                   .AllowAnyMethod()
-                   .AllowCredentials();
-        }
+            
+        // // In Azure (Production), use origins from appsettings.Production.json
+        // // For local/dev, allow any origin for simplicity with Docker and local tools.
+        // if (string.Equals(azureDeploymentEnv, "true", StringComparison.OrdinalIgnoreCase) ||
+        //     string.Equals(aspnetcoreEnvironment, "Production", StringComparison.OrdinalIgnoreCase))
+        // {
+        //     logger.LogInformation("Applying Production CORS policy.");
+        //     var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        //     if (allowedOrigins.Length > 0)
+        //     {
+        //         logger.LogInformation($"Allowed origins from config: {string.Join(", ", allowedOrigins)}");
+        //         corsBuilder.WithOrigins(allowedOrigins)
+        //                .AllowAnyHeader()
+        //                .AllowAnyMethod()
+        //                .AllowCredentials(); // Allow credentials if your frontend sends them (e.g., for cookies/auth)
+        //     }
+        //     else
+        //     {
+        //         logger.LogWarning("No CORS origins configured in appsettings.Production.json. Allowing any origin as a fallback.");
+        //         corsBuilder.AllowAnyOrigin() // Fallback if not configured, though specific origins are better
+        //                .AllowAnyHeader()
+        //                .AllowAnyMethod();
+        //     }
+        // }
+        // else
+        // {
+        //     logger.LogInformation("Applying Development CORS policy (AllowAnyOrigin).");
+        //     // Development/Docker CORS policy
+        //     corsBuilder.SetIsOriginAllowed(_ => true) // More permissive for local dev
+        //            .AllowAnyHeader()
+        //            .AllowAnyMethod()
+        //            .AllowCredentials();
+        // }
     });
 });
 
@@ -169,7 +176,9 @@ using (var scope = app.Services.CreateScope())
         
         // Apply pending migrations instead of just ensuring the database is created
         dbContext.Database.Migrate();
-        
+
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("Database migrations applied successfully");
         Console.WriteLine("Database migrations applied successfully");
     }
     catch (Exception ex)
