@@ -31,14 +31,56 @@ const createResponse = (data, status = 200) => {
 
 // In-memory data store for simulation
 let dataStore = {
-    games: [],
-    companies: [],
+    games: [
+            {
+                Id: 1,
+                Name: "Epic Adventure Quest",
+                Price: 29.99,
+                Description: "Embark on an epic adventure through mystical lands filled with challenges, treasures, and legendary creatures.",
+                IconID: "DeathsDoorIcon", // Updated to use a valid icon ID
+                Rating: 4.5,
+                Genres: ["Adventure", "RPG", "Action"],
+                Platforms: ["PC", "Xbox", "PlayStation"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 2,
+                Name: "Space Commander",
+                Price: 39.99,
+                Description: "Command your own spaceship and explore the galaxy in this thrilling space simulation game.",
+                IconID: "NMSIcon", // Updated to use a valid icon ID
+                Rating: 4.2,
+                Genres: ["Strategy", "Simulation", "Sci-Fi"],
+                Platforms: ["PC", "Nintendo Switch", "Mobile"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            }
+        ],
+    companies: [
+            {
+                Id: 1,
+                CompanyName: "Adventure Studios",
+                NetWorth: 5000000,
+                LogoID: "ROR2Icon", // Updated to use a valid icon ID
+                Description: "Creating epic adventure games since 2005",
+                Games: [] // Will be populated with references to games
+            },
+            {
+                Id: 2,
+                CompanyName: "Cosmic Games",
+                NetWorth: 3500000,
+                LogoID: "NMSIcon", // Updated to use a valid icon ID
+                Description: "Specializing in space and sci-fi gaming experiences",
+                Games: [] // Will be populated with references to games
+            }
+        ],
     currentFile: null,
     ratingDistribution: {
-        "1-2": 2,
-        "2-3": 5,
-        "3-4": 10,
-        "4-5": 8
+        "1-2": 0,
+        "2-3": 0,
+        "3-4": 0,
+        "4-5": 2
     }
 };
 
