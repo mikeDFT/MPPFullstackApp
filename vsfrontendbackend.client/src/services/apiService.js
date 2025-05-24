@@ -1,6 +1,7 @@
 //import { env } from 'process';
 import { getOnLineStatus } from '../utils/OnlineChecker';
 import { SERVER_HTTP_URL } from '../config';
+import { backendService } from './backendService';
 
 // Get the API URL from environment variables or use default
 // shamelessly stolen from vite.config.js
@@ -11,11 +12,6 @@ const API_BASE_URL = env.ASPNETCORE_HTTPS_PORT ? `${SERVER_HTTP_URL}:${env.ASPNE
 // Track server status
 let isServerUp = true;
 let serverStatusListeners = new Set();
-
-// function resetLocalStorageQueue() {
-//    localStorage.setItem('requestQueue', [])
-// }
-// resetLocalStorageQueue();
 
 // Request queue system
 const requestQueue = {
@@ -33,11 +29,13 @@ const requestQueue = {
                     ...item,
                     execute: () => {
                         const { method, url, body } = item;
-                        return fetch(url, {
-                            method,
-                            headers: body ? { 'Content-Type': 'application/json' } : undefined,
-                            body: body ? JSON.stringify(body) : undefined
-                        }).then(handleResponse);
+                        // Map to corresponding backendService method instead of fetch
+                        const serviceMethod = mapUrlToServiceMethod(method, url);
+                        if (serviceMethod) {
+                            return serviceMethod(body)
+                                .then(response => handleBackendResponse(response));
+                        }
+                        return Promise.reject(new Error(`No service method found for ${method} ${url}`));
                     }
                 }));
                 console.log('Loaded queue from localStorage:', requestQueue.queue);
@@ -94,6 +92,61 @@ const requestQueue = {
     }
 };
 
+// Map URL to corresponding backendService method
+const mapUrlToServiceMethod = (method, url) => {
+    const urlObj = new URL(url);
+    const path = urlObj.pathname;
+    const id = path.split('/').pop();
+    
+    // Game endpoints
+    if (path.startsWith(`${API_BASE_URL}/game`)) {
+        if (method === 'GET') {
+            if (path === `${API_BASE_URL}/game`) {
+                return params => backendService.getAllGames(params);
+            } else {
+                return () => backendService.getGameById(parseInt(id));
+            }
+        } else if (method === 'POST') {
+            return body => backendService.modifyGame(body);
+        } else if (method === 'DELETE') {
+            return () => backendService.deleteGame(parseInt(id));
+        }
+    }
+    
+    // Company endpoints
+    if (path.startsWith(`${API_BASE_URL}/company`)) {
+        if (method === 'GET') {
+            if (path === `${API_BASE_URL}/company`) {
+                return params => backendService.getAllCompanies(params);
+            } else {
+                return () => backendService.getCompanyById(parseInt(id));
+            }
+        } else if (method === 'POST') {
+            return body => backendService.modifyCompany(body);
+        } else if (method === 'DELETE') {
+            return () => backendService.deleteCompany(parseInt(id));
+        }
+    }
+    
+    // Files endpoints
+    if (path.startsWith(`${API_BASE_URL}/files`)) {
+        if (path.includes('upload')) {
+            return file => backendService.uploadFile(file);
+        } else if (path.includes('download')) {
+            return () => backendService.downloadFile();
+        } else if (path.includes('exists')) {
+            return () => backendService.fileExists();
+        }
+    }
+    
+    // Rating chart endpoint
+    if (path.startsWith(`${API_BASE_URL}/ratingchart`)) {
+        return () => backendService.getRatingDistribution();
+    }
+    
+    return null;
+};
+
 // Load queue on startup
 requestQueue.loadQueue();
 
@@ -102,28 +155,19 @@ const canMakeRequest = () => {
     return isServerUp && getOnLineStatus();
 };
 
-async function handleResponse(response) {
+// Process backend service responses
+async function handleBackendResponse(response) {
     if (!response.ok) {
         isServerUp = false;
         serverStatusListeners.forEach(listener => listener(false));
         throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    // Check if the response has content before parsing JSON
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.includes("application/json") && response.status !== 204) {
-        var json = await response.json();
-        console.log('Response:', json);
-        isServerUp = true;
-        serverStatusListeners.forEach(listener => listener(true));
-        return json;
-    } else {
-        // Return a simple success object for empty responses
-        console.log("Empty response");
-        isServerUp = true;
-        serverStatusListeners.forEach(listener => listener(true));
-        return { success: true, status: response.status };
-    }
+    const data = response.data;
+    console.log('Response:', data);
+    isServerUp = true;
+    serverStatusListeners.forEach(listener => listener(true));
+    return data;
 }
 
 export const serverStatus = {
@@ -142,8 +186,8 @@ export const checkServerStatus = async () => {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/game`);
-        await handleResponse(response);
+        const response = await backendService.checkStatus();
+        await handleBackendResponse(response);
         // If we get here, the server is up, so process any queued requests
         requestQueue.process();
         return true;
@@ -162,11 +206,11 @@ const createQueuedRequest = (method, url, body = null) => ({
     body,
     timestamp: Date.now(),
     execute: () => {
-        return fetch(url, {
-            method,
-            headers: body ? { 'Content-Type': 'application/json' } : undefined,
-            body: body ? JSON.stringify(body) : undefined
-        }).then(handleResponse);
+        const serviceMethod = mapUrlToServiceMethod(method, url);
+        if (serviceMethod) {
+            return serviceMethod(body).then(handleBackendResponse);
+        }
+        return Promise.reject(new Error(`No service method found for ${method} ${url}`));
     }
 });
 
@@ -186,38 +230,19 @@ export const apiService = {
     // Fetch all games
     getAllGames: async (params) => {
         const executeRequest = async () => {
-            const queryParams = new URLSearchParams();
-            
-            if (params.sortBy) queryParams.append('SortBy', params.sortBy);
-            if (params.ascending !== undefined) queryParams.append('Ascending', params.ascending);
-            if (params.searchText) queryParams.append('SearchText', params.searchText);
-            console.log("Company search text:", params.companySearchText);
-            if (params.companySearchText) queryParams.append('CompanySearchText', params.companySearchText);
-            if (params.genres) {
-                for (var genre of params.genres) {
-                    queryParams.append('Genres', genre);
-                }
-            }   
-            if (params.platforms) {
-                for (var platform of params.platforms) {
-                    queryParams.append('Platforms', platform);
-                }
-            }
-
-            const queryString = queryParams.toString();
-            const response = await fetch(`${API_BASE_URL}/game?${queryString}`);
-            var games = await handleResponse(response);
+            const response = await backendService.getAllGames(params);
+            const games = await handleBackendResponse(response);
             return games.map(game => ({
-                Id: game.id,
-                Name: game.name,
-                Price: game.price,
-                Description: game.description,
-                IconID: game.iconID,
-                Rating: game.rating,
-                Genres: game.genres,
-                Platforms: game.platforms,
-                CompanyID: game.companyID,
-                CompanyName: game.companyName
+                Id: game.Id,
+                Name: game.Name,
+                Price: game.Price,
+                Description: game.Description,
+                IconID: game.IconID,
+                Rating: game.Rating,
+                Genres: game.Genres,
+                Platforms: game.Platforms,
+                CompanyID: game.CompanyID,
+                CompanyName: game.CompanyName
             }));
         };
 
@@ -239,19 +264,19 @@ export const apiService = {
     // Fetch a single game
     getGame: async (id) => {
         const executeRequest = async () => {
-            const response = await fetch(`${API_BASE_URL}/game/${id}`);
-            var game = await handleResponse(response);
+            const response = await backendService.getGameById(id);
+            const game = await handleBackendResponse(response);
             return {
-                Id: game.id,
-                Name: game.name,
-                Price: game.price,
-                Description: game.description,
-                IconID: game.iconID,
-                Rating: game.rating,
-                Genres: game.genres,
-                Platforms: game.platforms,
-                CompanyID: game.companyID,
-                CompanyName: game.companyName
+                Id: game.Id,
+                Name: game.Name,
+                Price: game.Price,
+                Description: game.Description,
+                IconID: game.IconID,
+                Rating: game.Rating,
+                Genres: game.Genres,
+                Platforms: game.Platforms,
+                CompanyID: game.CompanyID,
+                CompanyName: game.CompanyName
             };
         };
 
@@ -276,12 +301,8 @@ export const apiService = {
     // Add new game or update an already existing one
     modifyGame: async (game) => {
         const executeRequest = async () => {
-            const response = await fetch(`${API_BASE_URL}/game`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(game)
-            });
-            return await handleResponse(response);
+            const response = await backendService.modifyGame(game);
+            return await handleBackendResponse(response);
         };
 
         try {
@@ -299,10 +320,8 @@ export const apiService = {
     // Delete game
     deleteGame: async (id) => {
         const executeRequest = async () => {
-            const response = await fetch(`${API_BASE_URL}/game/${id}`, {
-                method: 'DELETE'
-            });
-            return await handleResponse(response);
+            const response = await backendService.deleteGame(id);
+            return await handleBackendResponse(response);
         };
 
         try {
@@ -320,15 +339,8 @@ export const apiService = {
     // Fetch all companies
     getAllCompanies: async (params) => {
         const executeRequest = async () => {
-            const queryParams = new URLSearchParams();
-            
-            if (params.sortBy) queryParams.append('SortBy', params.sortBy);
-            if (params.ascending !== undefined) queryParams.append('Ascending', params.ascending);
-            if (params.searchText) queryParams.append('SearchText', params.searchText);
-
-            const queryString = queryParams.toString();
-            const response = await fetch(`${API_BASE_URL}/company?${queryString}`);
-            return await handleResponse(response);
+            const response = await backendService.getAllCompanies(params);
+            return await handleBackendResponse(response);
         };
 
         try {
@@ -349,8 +361,8 @@ export const apiService = {
     // Fetch a single company
     getCompany: async (id) => {
         const executeRequest = async () => {
-            const response = await fetch(`${API_BASE_URL}/company/${id}`);
-            return await handleResponse(response);
+            const response = await backendService.getCompanyById(id);
+            return await handleBackendResponse(response);
         };
 
         try {
@@ -374,12 +386,8 @@ export const apiService = {
     // Add new company or update an already existing one
     modifyCompany: async (company) => {
         const executeRequest = async () => {
-            const response = await fetch(`${API_BASE_URL}/company`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(company)
-            });
-            return await handleResponse(response);
+            const response = await backendService.modifyCompany(company);
+            return await handleBackendResponse(response);
         };
 
         try {
@@ -397,10 +405,8 @@ export const apiService = {
     // Delete company
     deleteCompany: async (id) => {
         const executeRequest = async () => {
-            const response = await fetch(`${API_BASE_URL}/company/${id}`, {
-                method: 'DELETE'
-            });
-            return await handleResponse(response);
+            const response = await backendService.deleteCompany(id);
+            return await handleBackendResponse(response);
         };
 
         try {
@@ -417,25 +423,15 @@ export const apiService = {
 
     // File upload and download methods
     uploadFile: async (file) => {
-        const formData = new FormData();
-        // formData.append('file', file);
-        formData.append('file', file);
-
         try {
-            const response = await fetch(`${API_BASE_URL}/files/upload`, {
-                method: 'POST',
-                body: formData,
-            });
-
+            const response = await backendService.uploadFile(file);
+            
             if (!response.ok) {
-                const errorText = await response.text();
+                const errorText = response.data?.error || 'Unknown error';
                 throw new Error(`Upload failed: ${errorText}`);
             }
             
-            var json = await response.json();
-            console.log(json);
-
-            return await json;
+            return response.data;
         } catch (error) {
             console.error('Error uploading file:', error);
             throw error;
@@ -444,37 +440,17 @@ export const apiService = {
 
     downloadFile: async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/files/download`);
+            const response = await backendService.downloadFile();
 
             if (!response.ok) {
                 if (response.status === 404) {
                     throw new Error('No file found on server');
                 }
-                const errorText = await response.text();
+                const errorText = response.data?.error || 'Unknown error';
                 throw new Error(`Download failed: ${errorText}`);
             }
 
-            // Get the filename from the Content-Disposition header
-            const contentDisposition = response.headers.get('Content-Disposition');
-            console.log(response)
-            console.log(contentDisposition)
-            let filename = 'downloaded_file';
-            
-            if (contentDisposition) {
-                const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-                if (filenameMatch && filenameMatch[1]) {
-                    filename = filenameMatch[1];
-                    console.log('Filename from server:', filename);
-                }
-            }
-
-            // Get content type from response headers
-            const contentType = response.headers.get('Content-Type');
-            console.log('Content-Type from server:', contentType);
-
-            // Create a blob from the response with the correct content type
-            const blob = await response.blob();
-            
+            const { blob, filename, contentType } = response.data;
             return { blob, filename, contentType };
         } catch (error) {
             console.error('Error downloading file:', error);
@@ -484,14 +460,13 @@ export const apiService = {
 
     checkFileExists: async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/files/exists`);
+            const response = await backendService.fileExists();
             
             if (!response.ok) {
                 throw new Error('Failed to check if file exists');
             }
             
-            const data = await response.json();
-            return data.exists;
+            return response.data.exists;
         } catch (error) {
             console.error('Error checking if file exists:', error);
             return false;
@@ -501,8 +476,8 @@ export const apiService = {
     // Get rating distribution data
     getRatingDistribution: async () => {
         const executeRequest = async () => {
-            const response = await fetch(`${API_BASE_URL}/ratingchart`);
-            return await handleResponse(response);
+            const response = await backendService.getRatingDistribution();
+            return await handleBackendResponse(response);
         };
 
         try {
