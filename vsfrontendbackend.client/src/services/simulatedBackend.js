@@ -1,8 +1,8 @@
-// Simulated Backend Service
-// This file simulates all server functionality without actual network calls
+// Local Backend Service
+// This file provides local backend functionality without actual network calls
 
-// Simulated data storage (replaces database)
-let simulatedData = {
+// Local data storage (replaces database)
+let localData = {
     games: [],
     companies: [],
     logs: [],
@@ -25,7 +25,7 @@ let simulatedData = {
 // Initialize with sample data
 const initializeSampleData = () => {
     // Sample companies
-    simulatedData.companies = [
+    localData.companies = [
         {
             Id: 1,
             CompanyName: "Epic Games Inc.",
@@ -47,10 +47,8 @@ const initializeSampleData = () => {
             LogoID: "valve_logo",
             Description: "American video game developer and digital distribution company, creators of Steam platform."
         }
-    ];
-
-    // Sample games
-    simulatedData.games = [
+    ];    // Sample games
+    localData.games = [
         {
             Id: 1,
             CompanyID: 1,
@@ -84,10 +82,8 @@ const initializeSampleData = () => {
             Genres: ["Puzzle", "Casual", "Educational"],
             Platforms: ["PC", "Mobile", "Tablet"]
         }
-    ];
-
-    simulatedData.nextGameId = 4;
-    simulatedData.nextCompanyId = 4;
+    ];    localData.nextGameId = 4;
+    localData.nextCompanyId = 4;
     updateRatingDistribution();
 };
 
@@ -98,16 +94,14 @@ const updateRatingDistribution = () => {
         "2-3": 0,
         "3-4": 0,
         "4-5": 0
-    };
-
-    simulatedData.games.forEach(game => {
+    };    localData.games.forEach(game => {
         if (game.Rating >= 1 && game.Rating < 2) distribution["1-2"]++;
         else if (game.Rating >= 2 && game.Rating < 3) distribution["2-3"]++;
         else if (game.Rating >= 3 && game.Rating < 4) distribution["3-4"]++;
         else if (game.Rating >= 4 && game.Rating <= 5) distribution["4-5"]++;
     });
 
-    simulatedData.ratingDistribution = distribution;
+    localData.ratingDistribution = distribution;
 };
 
 const logAction = (actionType, message, status = "200 OK", additionalData = {}) => {
@@ -118,17 +112,18 @@ const logAction = (actionType, message, status = "200 OK", additionalData = {}) 
         Status: status,
         Timestamp: new Date().toISOString(),
         ClientIpAddress: "127.0.0.1",
-        DurationMs: Math.floor(Math.random() * 50) + 10, // Simulate 10-60ms response time
+        DurationMs: Math.floor(Math.random() * 50) + 10, // Local response time: 10-60ms
         ...additionalData
     };
 
-    simulatedData.logs.push(logEntry);
-    console.log(`[SIMULATED LOG] ${actionType}: ${message}`);
+    localData.logs.push(logEntry);
+    // Client-side logging - matches browser console format
+    console.log(`[${new Date().toISOString()}] ${actionType}: ${message} (${logEntry.DurationMs}ms)`);
     return logEntry;
 };
 
 const findCompanyById = (id) => {
-    return simulatedData.companies.find(c => c.Id === id) || {
+    return localData.companies.find(c => c.Id === id) || {
         Id: -1,
         CompanyName: "",
         NetWorth: 0,
@@ -276,13 +271,13 @@ const gamePlatforms = [
     "PC", "Xbox", "PlayStation", "Nintendo Switch", "Mobile", "Tablet", "VR"
 ];
 
-// Simulated Backend API
-export const simulatedBackend = {
+// Local Backend API
+const localBackend = {
     // Initialize the backend
     initialize: () => {
-        console.log("Initializing simulated backend...");
+        console.log("Initializing local backend...");
         initializeSampleData();
-        console.log("Simulated backend initialized with sample data");
+        console.log("Local backend initialized with sample data");
     },
 
     // Game endpoints
@@ -621,14 +616,15 @@ export const simulatedBackend = {
                 console.error("Failed to import data:", error);
                 return false;
             }
-        },
-
-        reset: () => {
+        },        reset: () => {
             initializeSampleData();
-            console.log("Reset simulated data to initial state");
+            console.log("Reset local data to initial state");
         }
     }
 };
 
 // Initialize on import
-simulatedBackend.initialize();
+localBackend.initialize();
+
+// Export as default
+export default localBackend;
