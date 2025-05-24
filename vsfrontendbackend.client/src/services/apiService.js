@@ -232,6 +232,7 @@ export const apiService = {
         const executeRequest = async () => {
             const response = await backendService.getAllGames(params);
             const games = await handleBackendResponse(response);
+            console.log('!!!Fetched games:', games);
             return games.map(game => ({
                 Id: game.Id,
                 Name: game.Name,

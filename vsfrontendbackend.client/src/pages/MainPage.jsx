@@ -17,8 +17,8 @@ function MainPage() {
                 <RatingChart />
                 <div style={{padding: "1em"}}></div>
                 <KeepGeneratingGamesButton />
-                <div style={{padding: "1em"}}></div>
-                <FileButtons />
+                {/* <div style={{padding: "1em"}}></div>
+                <FileButtons /> */}
             </div>
 
             <div style={{padding: "1em", flex: "0 0 65%"}}>
