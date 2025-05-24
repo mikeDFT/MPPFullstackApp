@@ -140,27 +140,37 @@ initializeDataStore();
 const filterGames = (games, params) => {
     let filtered = [...games];
     
+    console.log('Filtering games with params:', params);
+
     if (params.searchText) {
         const searchText = params.searchText.toLowerCase();
         filtered = filtered.filter(g => g.Name.toLowerCase().includes(searchText));
     }
+
+    console.log('Filtered games after searchText:', filtered.length);
     
     if (params.companySearchText) {
         const companySearchText = params.companySearchText.toLowerCase();
         filtered = filtered.filter(g => g.CompanyName.toLowerCase().includes(companySearchText));
     }
     
+    console.log('Filtered games after companySearchText:', filtered.length);
+
     if (params.genres && params.genres.length > 0) {
         filtered = filtered.filter(g => 
             g.Genres.some(genre => params.genres.includes(genre))
         );
     }
+
+    console.log('Filtered games after genres:', filtered.length);
     
     if (params.platforms && params.platforms.length > 0) {
         filtered = filtered.filter(g => 
             g.Platforms.some(platform => params.platforms.includes(platform))
         );
     }
+
+    console.log('Filtered games after platforms:', filtered.length);
     
     if (params.sortBy) {
         filtered.sort((a, b) => {
@@ -179,6 +189,8 @@ const filterGames = (games, params) => {
         });
     }
     
+    console.log('Filtered games after sorting:', filtered.length);
+
     return filtered;
 };
 
