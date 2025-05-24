@@ -37,7 +37,7 @@ let dataStore = {
                 Name: "Epic Adventure Quest",
                 Price: 29.99,
                 Description: "Embark on an epic adventure through mystical lands filled with challenges, treasures, and legendary creatures.",
-                IconID: "DeathsDoorIcon", // Updated to use a valid icon ID
+                IconID: "DeathsDoorIcon",
                 Rating: 4.5,
                 Genres: ["Adventure", "RPG", "Action"],
                 Platforms: ["PC", "Xbox", "PlayStation"],
@@ -49,10 +49,250 @@ let dataStore = {
                 Name: "Space Commander",
                 Price: 39.99,
                 Description: "Command your own spaceship and explore the galaxy in this thrilling space simulation game.",
-                IconID: "NMSIcon", // Updated to use a valid icon ID
+                IconID: "NMSIcon",
                 Rating: 4.2,
                 Genres: ["Strategy", "Simulation", "Sci-Fi"],
                 Platforms: ["PC", "Nintendo Switch", "Mobile"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 3,
+                Name: "Cyber Chronicles",
+                Price: 49.99,
+                Description: "Enter a dystopian future where cybernetic enhancements blur the line between human and machine.",
+                IconID: "BPMIcon",
+                Rating: 4.7,
+                Genres: ["RPG", "Cyberpunk", "Action"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 4,
+                Name: "Mystic Realms",
+                Price: 24.99,
+                Description: "Discover hidden powers and ancient magic in a world on the brink of chaos.",
+                IconID: "DeadCellsIcon",
+                Rating: 4.1,
+                Genres: ["Fantasy", "Adventure", "Puzzle"],
+                Platforms: ["PC", "Mobile", "Nintendo Switch"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 5,
+                Name: "Quantum Nexus",
+                Price: 34.99,
+                Description: "Navigate through parallel universes where your choices create and destroy entire realities.",
+                IconID: "Portal2Icon",
+                Rating: 4.8,
+                Genres: ["Sci-Fi", "Puzzle", "Adventure"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 6,
+                Name: "Stellar Odyssey",
+                Price: 19.99,
+                Description: "Explore uncharted star systems and establish colonies across the galaxy.",
+                IconID: "NMSIcon",
+                Rating: 3.9,
+                Genres: ["Strategy", "Simulation", "Sci-Fi"],
+                Platforms: ["PC", "Mac", "Linux"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 7,
+                Name: "Shadow Warriors",
+                Price: 29.99,
+                Description: "Master the ancient arts of stealth and combat as you seek revenge against the clan that betrayed you.",
+                IconID: "KillKnightIcon",
+                Rating: 4.3,
+                Genres: ["Action", "Stealth", "Martial Arts"],
+                Platforms: ["PlayStation", "Xbox", "PC"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 8,
+                Name: "Crystal Kingdoms",
+                Price: 44.99,
+                Description: "Build and defend your kingdom in a world where magical crystals power civilization.",
+                IconID: "SlayTheSpireIcon",
+                Rating: 4.0,
+                Genres: ["Strategy", "City-building", "Fantasy"],
+                Platforms: ["PC", "Mac", "Mobile"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 9,
+                Name: "Eternal Dungeons",
+                Price: 14.99,
+                Description: "Descend into procedurally generated dungeons filled with monsters, traps, and legendary treasures.",
+                IconID: "ROR2Icon",
+                Rating: 4.6,
+                Genres: ["Roguelike", "Dungeon Crawler", "RPG"],
+                Platforms: ["PC", "Nintendo Switch", "PlayStation"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 10,
+                Name: "Tech Tycoon",
+                Price: 39.99,
+                Description: "Build your tech empire from a garage startup to a global corporation that shapes the future.",
+                IconID: "SuperHotIcon",
+                Rating: 3.8,
+                Genres: ["Simulation", "Strategy", "Business"],
+                Platforms: ["PC", "Mac", "Mobile"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 11,
+                Name: "Dragon Hunters",
+                Price: 49.99,
+                Description: "Form a party of unique heroes to track and slay legendary dragons threatening the realm.",
+                IconID: "PalworldIcon",
+                Rating: 4.4,
+                Genres: ["RPG", "Action", "Adventure"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 12,
+                Name: "Frozen Frontiers",
+                Price: 24.99,
+                Description: "Survive in a post-apocalyptic frozen wasteland where resources are scarce and dangers abundant.",
+                IconID: "LethalCompIcon",
+                Rating: 4.2,
+                Genres: ["Survival", "Open World", "Crafting"],
+                Platforms: ["PC", "Xbox", "PlayStation"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 13,
+                Name: "Blazing Rebellion",
+                Price: 34.99,
+                Description: "Lead the resistance against a tyrannical empire with revolutionary tactics and guerrilla warfare.",
+                IconID: "REPOIcon",
+                Rating: 3.7,
+                Genres: ["Strategy", "Action", "FPS"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 14,
+                Name: "Void Explorers",
+                Price: 29.99,
+                Description: "Venture into the mysterious Void, a dimension beyond space and time with its own bizarre laws of physics.",
+                IconID: "DBDIcon",
+                Rating: 3.5,
+                Genres: ["Horror", "Adventure", "Puzzle"],
+                Platforms: ["PC", "PlayStation", "VR"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 15,
+                Name: "Primal Survivors",
+                Price: 19.99,
+                Description: "Return to the stone age where primitive humans must evolve and adapt to survive against prehistoric threats.",
+                IconID: "DarkNDIcon",
+                Rating: 4.0,
+                Genres: ["Survival", "Simulation", "Crafting"],
+                Platforms: ["PC", "Xbox", "Mobile"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 16,
+                Name: "Phantom Tactics",
+                Price: 24.99,
+                Description: "Command a squad of ghost operatives with unique supernatural abilities on high-stakes missions.",
+                IconID: "DeathsDoorIcon",
+                Rating: 4.3,
+                Genres: ["Tactical", "Strategy", "Supernatural"],
+                Platforms: ["PC", "Nintendo Switch", "PlayStation"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 17,
+                Name: "Mega Racers",
+                Price: 39.99,
+                Description: "Compete in high-octane races across impossible tracks with physics-defying vehicles and power-ups.",
+                IconID: "AmogusIcon",
+                Rating: 4.1,
+                Genres: ["Racing", "Arcade", "Multiplayer"],
+                Platforms: ["PlayStation", "Xbox", "PC"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 18,
+                Name: "Astral Siege",
+                Price: 29.99,
+                Description: "Defend your space colony against waves of alien invaders using advanced weaponry and tactical planning.",
+                IconID: "NMSIcon",
+                Rating: 3.9,
+                Genres: ["Tower Defense", "Strategy", "Sci-Fi"],
+                Platforms: ["PC", "Mobile", "Mac"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 19,
+                Name: "Mystic Wizards",
+                Price: 24.99,
+                Description: "Attend a prestigious academy for wizards where you'll learn powerful spells and uncover ancient conspiracies.",
+                IconID: "DuolingoIcon",
+                Rating: 4.5,
+                Genres: ["RPG", "Fantasy", "Adventure"],
+                Platforms: ["PC", "PlayStation", "Nintendo Switch"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 20,
+                Name: "Neon Infiltrator",
+                Price: 19.99,
+                Description: "Hack into corporate systems and infiltrate heavily guarded facilities in a neon-lit cyberpunk world.",
+                IconID: "SuperHotIcon",
+                Rating: 4.2,
+                Genres: ["Stealth", "Hacking", "Cyberpunk"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 21,
+                Name: "Pixel Dungeons",
+                Price: 9.99,
+                Description: "Navigate through retro-style pixel art dungeons with challenging puzzles and nostalgic gameplay.",
+                IconID: "SlayTheSpireIcon",
+                Rating: 4.0,
+                Genres: ["Retro", "Puzzle", "Platformer"],
+                Platforms: ["PC", "Mobile", "Nintendo Switch"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 22,
+                Name: "Ultra Titans",
+                Price: 54.99,
+                Description: "Pilot massive mechs in epic battles that will determine the fate of human civilization on distant planets.",
+                IconID: "BPMIcon",
+                Rating: 4.7,
+                Genres: ["Mech", "Action", "Sci-Fi"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
                 CompanyID: 2,
                 CompanyName: "Cosmic Games"
             }
@@ -62,7 +302,7 @@ let dataStore = {
                 Id: 1,
                 CompanyName: "Adventure Studios",
                 NetWorth: 5000000,
-                LogoID: "ROR2Icon", // Updated to use a valid icon ID
+                LogoID: "ROR2Icon",
                 Description: "Creating epic adventure games since 2005",
                 Games: [] // Will be populated with references to games
             },
@@ -70,7 +310,7 @@ let dataStore = {
                 Id: 2,
                 CompanyName: "Cosmic Games",
                 NetWorth: 3500000,
-                LogoID: "NMSIcon", // Updated to use a valid icon ID
+                LogoID: "NMSIcon",
                 Description: "Specializing in space and sci-fi gaming experiences",
                 Games: [] // Will be populated with references to games
             }
@@ -79,8 +319,8 @@ let dataStore = {
     ratingDistribution: {
         "1-2": 0,
         "2-3": 0,
-        "3-4": 0,
-        "4-5": 2
+        "3-4": 7,
+        "4-5": 15
     }
 };
 
@@ -143,36 +383,601 @@ const initializeDataStore = () => {
                 Platforms: ["PC", "Nintendo Switch", "Mobile"],
                 CompanyID: 2,
                 CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 3,
+                Name: "Cyber Chronicles",
+                Price: 49.99,
+                Description: "Enter a dystopian future where cybernetic enhancements blur the line between human and machine.",
+                IconID: "BPMIcon", // Updated to use a valid icon ID
+                Rating: 4.7,
+                Genres: ["RPG", "Cyberpunk", "Action"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 4,
+                Name: "Mystic Realms",
+                Price: 24.99,
+                Description: "Discover hidden powers and ancient magic in a world on the brink of chaos.",
+                IconID: "DeadCellsIcon", // Updated to use a valid icon ID
+                Rating: 4.1,
+                Genres: ["Fantasy", "Adventure", "Puzzle"],
+                Platforms: ["PC", "Mobile", "Nintendo Switch"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 5,
+                Name: "Quantum Nexus",
+                Price: 34.99,
+                Description: "Navigate through parallel universes where your choices create and destroy entire realities.",
+                IconID: "Portal2Icon", // Updated to use a valid icon ID
+                Rating: 4.8,
+                Genres: ["Sci-Fi", "Puzzle", "Adventure"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 6,
+                Name: "Stellar Odyssey",
+                Price: 19.99,
+                Description: "Explore uncharted star systems and establish colonies across the galaxy.",
+                IconID: "NMSIcon", // Updated to use a valid icon ID
+                Rating: 3.9,
+                Genres: ["Strategy", "Simulation", "Sci-Fi"],
+                Platforms: ["PC", "Mac", "Linux"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 7,
+                Name: "Shadow Warriors",
+                Price: 29.99,
+                Description: "Master the ancient arts of stealth and combat as you seek revenge against the clan that betrayed you.",
+                IconID: "KillKnightIcon", // Updated to use a valid icon ID
+                Rating: 4.3,
+                Genres: ["Action", "Stealth", "Martial Arts"],
+                Platforms: ["PlayStation", "Xbox", "PC"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 8,
+                Name: "Crystal Kingdoms",
+                Price: 44.99,
+                Description: "Build and defend your kingdom in a world where magical crystals power civilization.",
+                IconID: "SlayTheSpireIcon", // Updated to use a valid icon ID
+                Rating: 4.0,
+                Genres: ["Strategy", "City-building", "Fantasy"],
+                Platforms: ["PC", "Mac", "Mobile"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 9,
+                Name: "Eternal Dungeons",
+                Price: 14.99,
+                Description: "Descend into procedurally generated dungeons filled with monsters, traps, and legendary treasures.",
+                IconID: "ROR2Icon", // Updated to use a valid icon ID
+                Rating: 4.6,
+                Genres: ["Roguelike", "Dungeon Crawler", "RPG"],
+                Platforms: ["PC", "Nintendo Switch", "PlayStation"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 10,
+                Name: "Tech Tycoon",
+                Price: 39.99,
+                Description: "Build your tech empire from a garage startup to a global corporation that shapes the future.",
+                IconID: "SuperHotIcon", // Updated to use a valid icon ID
+                Rating: 3.8,
+                Genres: ["Simulation", "Strategy", "Business"],
+                Platforms: ["PC", "Mac", "Mobile"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 11,
+                Name: "Dragon Hunters",
+                Price: 49.99,
+                Description: "Form a party of unique heroes to track and slay legendary dragons threatening the realm.",
+                IconID: "PalworldIcon", // Updated to use a valid icon ID
+                Rating: 4.4,
+                Genres: ["RPG", "Action", "Adventure"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 12,
+                Name: "Frozen Frontiers",
+                Price: 24.99,
+                Description: "Survive in a post-apocalyptic frozen wasteland where resources are scarce and dangers abundant.",
+                IconID: "LethalCompIcon", // Updated to use a valid icon ID
+                Rating: 4.2,
+                Genres: ["Survival", "Open World", "Crafting"],
+                Platforms: ["PC", "Xbox", "PlayStation"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 13,
+                Name: "Blazing Rebellion",
+                Price: 34.99,
+                Description: "Lead the resistance against a tyrannical empire with revolutionary tactics and guerrilla warfare.",
+                IconID: "REPOIcon", // Updated to use a valid icon ID
+                Rating: 3.7,
+                Genres: ["Strategy", "Action", "FPS"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 14,
+                Name: "Void Explorers",
+                Price: 29.99,
+                Description: "Venture into the mysterious Void, a dimension beyond space and time with its own bizarre laws of physics.",
+                IconID: "DBDIcon", // Updated to use a valid icon ID
+                Rating: 3.5,
+                Genres: ["Horror", "Adventure", "Puzzle"],
+                Platforms: ["PC", "PlayStation", "VR"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 15,
+                Name: "Primal Survivors",
+                Price: 19.99,
+                Description: "Return to the stone age where primitive humans must evolve and adapt to survive against prehistoric threats.",
+                IconID: "DarkNDIcon", // Updated to use a valid icon ID
+                Rating: 4.0,
+                Genres: ["Survival", "Simulation", "Crafting"],
+                Platforms: ["PC", "Xbox", "Mobile"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 16,
+                Name: "Phantom Tactics",
+                Price: 24.99,
+                Description: "Command a squad of ghost operatives with unique supernatural abilities on high-stakes missions.",
+                IconID: "DeathsDoorIcon", // Updated to use a valid icon ID
+                Rating: 4.3,
+                Genres: ["Tactical", "Strategy", "Supernatural"],
+                Platforms: ["PC", "Nintendo Switch", "PlayStation"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 17,
+                Name: "Mega Racers",
+                Price: 39.99,
+                Description: "Compete in high-octane races across impossible tracks with physics-defying vehicles and power-ups.",
+                IconID: "AmogusIcon", // Updated to use a valid icon ID
+                Rating: 4.1,
+                Genres: ["Racing", "Arcade", "Multiplayer"],
+                Platforms: ["PlayStation", "Xbox", "PC"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 18,
+                Name: "Astral Siege",
+                Price: 29.99,
+                Description: "Defend your space colony against waves of alien invaders using advanced weaponry and tactical planning.",
+                IconID: "NMSIcon", // Updated to use a valid icon ID
+                Rating: 3.9,
+                Genres: ["Tower Defense", "Strategy", "Sci-Fi"],
+                Platforms: ["PC", "Mobile", "Mac"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 19,
+                Name: "Mystic Wizards",
+                Price: 24.99,
+                Description: "Attend a prestigious academy for wizards where you'll learn powerful spells and uncover ancient conspiracies.",
+                IconID: "DuolingoIcon", // Updated to use a valid icon ID
+                Rating: 4.5,
+                Genres: ["RPG", "Fantasy", "Adventure"],
+                Platforms: ["PC", "PlayStation", "Nintendo Switch"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 20,
+                Name: "Neon Infiltrator",
+                Price: 19.99,
+                Description: "Hack into corporate systems and infiltrate heavily guarded facilities in a neon-lit cyberpunk world.",
+                IconID: "SuperHotIcon", // Updated to use a valid icon ID
+                Rating: 4.2,
+                Genres: ["Stealth", "Hacking", "Cyberpunk"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 21,
+                Name: "Pixel Dungeons",
+                Price: 9.99,
+                Description: "Navigate through retro-style pixel art dungeons with challenging puzzles and nostalgic gameplay.",
+                IconID: "SlayTheSpireIcon", // Updated to use a valid icon ID
+                Rating: 4.0,
+                Genres: ["Retro", "Puzzle", "Platformer"],
+                Platforms: ["PC", "Mobile", "Nintendo Switch"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 22,
+                Name: "Ultra Titans",
+                Price: 54.99,
+                Description: "Pilot massive mechs in epic battles that will determine the fate of human civilization on distant planets.",
+                IconID: "BPMIcon", // Updated to use a valid icon ID
+                Rating: 4.7,
+                Genres: ["Mech", "Action", "Sci-Fi"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
             }
-        ];
-        localStorage.setItem('gamesInfo', JSON.stringify(dataStore.games));
+        ],
+    companies: [
+            {
+                Id: 1,
+                CompanyName: "Adventure Studios",
+                NetWorth: 5000000,
+                LogoID: "ROR2Icon",
+                Description: "Creating epic adventure games since 2005",
+                Games: [] // Will be populated with references to games
+            },
+            {
+                Id: 2,
+                CompanyName: "Cosmic Games",
+                NetWorth: 3500000,
+                LogoID: "NMSIcon",
+                Description: "Specializing in space and sci-fi gaming experiences",
+                Games: [] // Will be populated with references to games
+            }
+        ],
+    currentFile: null,
+    ratingDistribution: {
+        "1-2": 0,
+        "2-3": 0,
+        "3-4": 7,
+        "4-5": 15
     }
-    
-    // Link games to companies
-    updateCompanyGameReferences();
-    
-    // Save rating distribution
-    localStorage.setItem('ratingDistribution', JSON.stringify(dataStore.ratingDistribution));
 };
 
-// Helper to update game references in companies
-const updateCompanyGameReferences = () => {
-    // Clear existing game references
-    dataStore.companies.forEach(company => {
-        company.Games = [];
-    });
+// Initialize with some default data if empty
+const initializeDataStore = () => {
+    // Check if we have stored data in localStorage
+    var savedGames = localStorage.getItem('gamesInfo');
+    var savedCompanies = localStorage.getItem('companiesInfo');
+
+    if (savedCompanies) {
+        dataStore.companies = JSON.parse(savedCompanies);
+    } else if (dataStore.companies.length === 0) {
+        // Update companies to match the C# model (Company.cs)
+        dataStore.companies = [
+            {
+                Id: 1,
+                CompanyName: "Adventure Studios",
+                NetWorth: 5000000,
+                LogoID: "ROR2Icon", // Updated to use a valid icon ID
+                Description: "Creating epic adventure games since 2005",
+                Games: [] // Will be populated with references to games
+            },
+            {
+                Id: 2,
+                CompanyName: "Cosmic Games",
+                NetWorth: 3500000,
+                LogoID: "NMSIcon", // Updated to use a valid icon ID
+                Description: "Specializing in space and sci-fi gaming experiences",
+                Games: [] // Will be populated with references to games
+            }
+        ];
+        localStorage.setItem('companiesInfo', JSON.stringify(dataStore.companies));
+    }
     
-    // Add each game to its company's Games collection
-    dataStore.games.forEach(game => {
-        const company = dataStore.companies.find(c => c.Id === game.CompanyID);
-        if (company) {
-            // Create a simplified reference to avoid circular references
-            company.Games.push({
-                Id: game.Id,
-                Name: game.Name
-            });
-        }
-    });
+    if (savedGames) {
+        dataStore.games = JSON.parse(savedGames);
+    } else if (dataStore.games.length === 0) {
+        // Games structure already matches GameDTO.cs
+        dataStore.games = [
+            {
+                Id: 1,
+                Name: "Epic Adventure Quest",
+                Price: 29.99,
+                Description: "Embark on an epic adventure through mystical lands filled with challenges, treasures, and legendary creatures.",
+                IconID: "DeathsDoorIcon", // Updated to use a valid icon ID
+                Rating: 4.5,
+                Genres: ["Adventure", "RPG", "Action"],
+                Platforms: ["PC", "Xbox", "PlayStation"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 2,
+                Name: "Space Commander",
+                Price: 39.99,
+                Description: "Command your own spaceship and explore the galaxy in this thrilling space simulation game.",
+                IconID: "NMSIcon", // Updated to use a valid icon ID
+                Rating: 4.2,
+                Genres: ["Strategy", "Simulation", "Sci-Fi"],
+                Platforms: ["PC", "Nintendo Switch", "Mobile"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 3,
+                Name: "Cyber Chronicles",
+                Price: 49.99,
+                Description: "Enter a dystopian future where cybernetic enhancements blur the line between human and machine.",
+                IconID: "BPMIcon", // Updated to use a valid icon ID
+                Rating: 4.7,
+                Genres: ["RPG", "Cyberpunk", "Action"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 4,
+                Name: "Mystic Realms",
+                Price: 24.99,
+                Description: "Discover hidden powers and ancient magic in a world on the brink of chaos.",
+                IconID: "DeadCellsIcon", // Updated to use a valid icon ID
+                Rating: 4.1,
+                Genres: ["Fantasy", "Adventure", "Puzzle"],
+                Platforms: ["PC", "Mobile", "Nintendo Switch"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 5,
+                Name: "Quantum Nexus",
+                Price: 34.99,
+                Description: "Navigate through parallel universes where your choices create and destroy entire realities.",
+                IconID: "Portal2Icon", // Updated to use a valid icon ID
+                Rating: 4.8,
+                Genres: ["Sci-Fi", "Puzzle", "Adventure"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 6,
+                Name: "Stellar Odyssey",
+                Price: 19.99,
+                Description: "Explore uncharted star systems and establish colonies across the galaxy.",
+                IconID: "NMSIcon", // Updated to use a valid icon ID
+                Rating: 3.9,
+                Genres: ["Strategy", "Simulation", "Sci-Fi"],
+                Platforms: ["PC", "Mac", "Linux"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 7,
+                Name: "Shadow Warriors",
+                Price: 29.99,
+                Description: "Master the ancient arts of stealth and combat as you seek revenge against the clan that betrayed you.",
+                IconID: "KillKnightIcon", // Updated to use a valid icon ID
+                Rating: 4.3,
+                Genres: ["Action", "Stealth", "Martial Arts"],
+                Platforms: ["PlayStation", "Xbox", "PC"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 8,
+                Name: "Crystal Kingdoms",
+                Price: 44.99,
+                Description: "Build and defend your kingdom in a world where magical crystals power civilization.",
+                IconID: "SlayTheSpireIcon", // Updated to use a valid icon ID
+                Rating: 4.0,
+                Genres: ["Strategy", "City-building", "Fantasy"],
+                Platforms: ["PC", "Mac", "Mobile"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 9,
+                Name: "Eternal Dungeons",
+                Price: 14.99,
+                Description: "Descend into procedurally generated dungeons filled with monsters, traps, and legendary treasures.",
+                IconID: "ROR2Icon", // Updated to use a valid icon ID
+                Rating: 4.6,
+                Genres: ["Roguelike", "Dungeon Crawler", "RPG"],
+                Platforms: ["PC", "Nintendo Switch", "PlayStation"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 10,
+                Name: "Tech Tycoon",
+                Price: 39.99,
+                Description: "Build your tech empire from a garage startup to a global corporation that shapes the future.",
+                IconID: "SuperHotIcon", // Updated to use a valid icon ID
+                Rating: 3.8,
+                Genres: ["Simulation", "Strategy", "Business"],
+                Platforms: ["PC", "Mac", "Mobile"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 11,
+                Name: "Dragon Hunters",
+                Price: 49.99,
+                Description: "Form a party of unique heroes to track and slay legendary dragons threatening the realm.",
+                IconID: "PalworldIcon", // Updated to use a valid icon ID
+                Rating: 4.4,
+                Genres: ["RPG", "Action", "Adventure"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 12,
+                Name: "Frozen Frontiers",
+                Price: 24.99,
+                Description: "Survive in a post-apocalyptic frozen wasteland where resources are scarce and dangers abundant.",
+                IconID: "LethalCompIcon", // Updated to use a valid icon ID
+                Rating: 4.2,
+                Genres: ["Survival", "Open World", "Crafting"],
+                Platforms: ["PC", "Xbox", "PlayStation"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 13,
+                Name: "Blazing Rebellion",
+                Price: 34.99,
+                Description: "Lead the resistance against a tyrannical empire with revolutionary tactics and guerrilla warfare.",
+                IconID: "REPOIcon", // Updated to use a valid icon ID
+                Rating: 3.7,
+                Genres: ["Strategy", "Action", "FPS"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 14,
+                Name: "Void Explorers",
+                Price: 29.99,
+                Description: "Venture into the mysterious Void, a dimension beyond space and time with its own bizarre laws of physics.",
+                IconID: "DBDIcon", // Updated to use a valid icon ID
+                Rating: 3.5,
+                Genres: ["Horror", "Adventure", "Puzzle"],
+                Platforms: ["PC", "PlayStation", "VR"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 15,
+                Name: "Primal Survivors",
+                Price: 19.99,
+                Description: "Return to the stone age where primitive humans must evolve and adapt to survive against prehistoric threats.",
+                IconID: "DarkNDIcon", // Updated to use a valid icon ID
+                Rating: 4.0,
+                Genres: ["Survival", "Simulation", "Crafting"],
+                Platforms: ["PC", "Xbox", "Mobile"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 16,
+                Name: "Phantom Tactics",
+                Price: 24.99,
+                Description: "Command a squad of ghost operatives with unique supernatural abilities on high-stakes missions.",
+                IconID: "DeathsDoorIcon", // Updated to use a valid icon ID
+                Rating: 4.3,
+                Genres: ["Tactical", "Strategy", "Supernatural"],
+                Platforms: ["PC", "Nintendo Switch", "PlayStation"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 17,
+                Name: "Mega Racers",
+                Price: 39.99,
+                Description: "Compete in high-octane races across impossible tracks with physics-defying vehicles and power-ups.",
+                IconID: "AmogusIcon", // Updated to use a valid icon ID
+                Rating: 4.1,
+                Genres: ["Racing", "Arcade", "Multiplayer"],
+                Platforms: ["PlayStation", "Xbox", "PC"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 18,
+                Name: "Astral Siege",
+                Price: 29.99,
+                Description: "Defend your space colony against waves of alien invaders using advanced weaponry and tactical planning.",
+                IconID: "NMSIcon", // Updated to use a valid icon ID
+                Rating: 3.9,
+                Genres: ["Tower Defense", "Strategy", "Sci-Fi"],
+                Platforms: ["PC", "Mobile", "Mac"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 19,
+                Name: "Mystic Wizards",
+                Price: 24.99,
+                Description: "Attend a prestigious academy for wizards where you'll learn powerful spells and uncover ancient conspiracies.",
+                IconID: "DuolingoIcon", // Updated to use a valid icon ID
+                Rating: 4.5,
+                Genres: ["RPG", "Fantasy", "Adventure"],
+                Platforms: ["PC", "PlayStation", "Nintendo Switch"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 20,
+                Name: "Neon Infiltrator",
+                Price: 19.99,
+                Description: "Hack into corporate systems and infiltrate heavily guarded facilities in a neon-lit cyberpunk world.",
+                IconID: "SuperHotIcon", // Updated to use a valid icon ID
+                Rating: 4.2,
+                Genres: ["Stealth", "Hacking", "Cyberpunk"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            },
+            {
+                Id: 21,
+                Name: "Pixel Dungeons",
+                Price: 9.99,
+                Description: "Navigate through retro-style pixel art dungeons with challenging puzzles and nostalgic gameplay.",
+                IconID: "SlayTheSpireIcon", // Updated to use a valid icon ID
+                Rating: 4.0,
+                Genres: ["Retro", "Puzzle", "Platformer"],
+                Platforms: ["PC", "Mobile", "Nintendo Switch"],
+                CompanyID: 1,
+                CompanyName: "Adventure Studios"
+            },
+            {
+                Id: 22,
+                Name: "Ultra Titans",
+                Price: 54.99,
+                Description: "Pilot massive mechs in epic battles that will determine the fate of human civilization on distant planets.",
+                IconID: "BPMIcon", // Updated to use a valid icon ID
+                Rating: 4.7,
+                Genres: ["Mech", "Action", "Sci-Fi"],
+                Platforms: ["PC", "PlayStation", "Xbox"],
+                CompanyID: 2,
+                CompanyName: "Cosmic Games"
+            }
+        ],
+    companies: [
+            {
+                Id: 1,
+                CompanyName: "Adventure Studios",
+                NetWorth: 5000000,
+                LogoID: "ROR2Icon",
+                Description: "Creating epic adventure games since 2005",
+                Games: [] // Will be populated with references to games
+            },
+            {
+                Id: 2,
+                CompanyName: "Cosmic Games",
+                NetWorth: 3500000,
+                LogoID: "NMSIcon",
+                Description: "Specializing in space and sci-fi gaming experiences",
+                Games: [] // Will be populated with references to games
+            }
+        ],
+    currentFile: null,
+    ratingDistribution: {
+        "1-2": 0,
+        "2-3": 0,
+        "3-4": 7,
+        "4-5": 15
+    }
 };
 
 // Call initialization
@@ -189,31 +994,23 @@ const filterGames = (games, params) => {
         filtered = filtered.filter(g => g.Name.toLowerCase().includes(searchText));
     }
 
-    console.log('Filtered games after searchText:', filtered.length);
-    
     if (params.companySearchText) {
         const companySearchText = params.companySearchText.toLowerCase();
         filtered = filtered.filter(g => g.CompanyName.toLowerCase().includes(companySearchText));
     }
     
-    console.log('Filtered games after companySearchText:', filtered.length);
-
     if (params.genres && params.genres.length > 0) {
         filtered = filtered.filter(g => 
             g.Genres.some(genre => params.genres.includes(genre))
         );
     }
 
-    console.log('Filtered games after genres:', filtered.length);
-    
     if (params.platforms && params.platforms.length > 0) {
         filtered = filtered.filter(g => 
             g.Platforms.some(platform => params.platforms.includes(platform))
         );
     }
 
-    console.log('Filtered games after platforms:', filtered.length);
-    
     if (params.sortBy) {
         filtered.sort((a, b) => {
             const aValue = a[params.sortBy];
@@ -231,8 +1028,6 @@ const filterGames = (games, params) => {
         });
     }
     
-    console.log('Filtered games after sorting:', filtered.length);
-
     return filtered;
 };
 
