@@ -142,13 +142,38 @@ builder.Services.AddControllers()
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>(); // For logging connection string
-    logger.LogInformation($"[Program.cs] Attempting to connect to database with ConnectionString: {connectionString?.Replace(builder.Configuration["SQL_PASSWORD"], "********")}"); // Basic redaction for password
+    // Check environment variables first for connection string
+    var envConnectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING");
+    
+    // If environment variable exists, use it
+    var connectionString = !string.IsNullOrEmpty(envConnectionString) 
+        ? envConnectionString 
+        : builder.Configuration.GetConnectionString(
+            Environment.GetEnvironmentVariable("DOCKER_ENVIRONMENT") == "true" 
+                ? "DockerConnection" 
+                : "DefaultConnection");
+    
+    var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+    
+    // Redact password for logging
+    var logConnectionString = connectionString;
+    if (logConnectionString != null)
+    {
+        // Simple redaction for common password patterns in connection strings
+        logConnectionString = logConnectionString
+            .Replace(builder.Configuration["SQL_PASSWORD"] ?? "Password", "********")
+            .Replace("Password=", "Password=********")
+            .Replace("password=", "password=********");
+    }
+    
+    logger.LogInformation($"[Program.cs] Attempting to connect to database with ConnectionString: {logConnectionString}");
+    
     if (string.IsNullOrEmpty(connectionString))
     {
-        logger.LogError("[Program.cs] Database connection string 'DefaultConnection' is null or empty.");
+        logger.LogError("[Program.cs] Database connection string is null or empty.");
+        throw new InvalidOperationException("Database connection string is missing. Please check environment variables or appsettings.json");
     }
+    
     options.UseSqlServer(connectionString);
 });
 
