@@ -71,16 +71,50 @@ builder.Services.AddWebSockets(options =>
     options.KeepAliveInterval = TimeSpan.FromSeconds(30); // Shorter interval for more reliable connection
 });
 
-// Add CORS with a more permissive policy for development
+// Add CORS with environment-aware policy
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp", builder =>
+    options.AddPolicy("AllowReactApp", corsBuilder => // Renamed builder to corsBuilder to avoid conflict
     {
-        // Much more permissive CORS policy for Docker environment
-        builder.SetIsOriginAllowed(_ => true)
-               .AllowAnyHeader()
-               .AllowAnyMethod()
-               .AllowCredentials(); // for cookies/auth
+        var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+        var azureDeploymentEnv = Environment.GetEnvironmentVariable("AZURE_DEPLOYMENT");
+        var aspnetcoreEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+        logger.LogInformation($"AZURE_DEPLOYMENT environment variable: {azureDeploymentEnv}");
+        logger.LogInformation($"ASPNETCORE_ENVIRONMENT environment variable: {aspnetcoreEnvironment}");
+
+        // In Azure (Production), use origins from appsettings.Production.json
+        // For local/dev, allow any origin for simplicity with Docker and local tools.
+        if (string.Equals(azureDeploymentEnv, "true", StringComparison.OrdinalIgnoreCase) || 
+            string.Equals(aspnetcoreEnvironment, "Production", StringComparison.OrdinalIgnoreCase))
+        {
+            logger.LogInformation("Applying Production CORS policy.");
+            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+            if (allowedOrigins.Length > 0)
+            {
+                logger.LogInformation($"Allowed origins from config: {string.Join(", ", allowedOrigins)}");
+                corsBuilder.WithOrigins(allowedOrigins)
+                       .AllowAnyHeader()
+                       .AllowAnyMethod()
+                       .AllowCredentials(); // Allow credentials if your frontend sends them (e.g., for cookies/auth)
+            }
+            else
+            {
+                logger.LogWarning("No CORS origins configured in appsettings.Production.json. Allowing any origin as a fallback.");
+                corsBuilder.AllowAnyOrigin() // Fallback if not configured, though specific origins are better
+                       .AllowAnyHeader()
+                       .AllowAnyMethod();
+            }
+        }
+        else
+        {
+            logger.LogInformation("Applying Development CORS policy (AllowAnyOrigin).");
+            // Development/Docker CORS policy
+            corsBuilder.SetIsOriginAllowed(_ => true) // More permissive for local dev
+                   .AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowCredentials();
+        }
     });
 });
 
@@ -107,10 +141,24 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>(); // For logging connection string
+    logger.LogInformation($"[Program.cs] Attempting to connect to database with ConnectionString: {connectionString?.Replace(builder.Configuration["SQL_PASSWORD"], "********")}"); // Basic redaction for password
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        logger.LogError("[Program.cs] Database connection string 'DefaultConnection' is null or empty.");
+    }
+    options.UseSqlServer(connectionString);
+});
 
 
 var app = builder.Build();
+
+// Log ASPNETCORE_URLS for debugging Kestrel binding
+var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
+var kestrelLogger = app.Services.GetRequiredService<ILogger<Program>>();
+kestrelLogger.LogInformation($"[Program.cs] ASPNETCORE_URLS: {urls}. Kestrel will attempt to bind to these.");
 
 using (var scope = app.Services.CreateScope())
 {

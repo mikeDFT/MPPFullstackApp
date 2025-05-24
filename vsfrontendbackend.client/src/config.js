@@ -1,24 +1,19 @@
-// Server configuration
-export const SERVER_IP = 'localhost';
+// Default development configuration (non-Azure)
 
-// Server ports
-export const SERVER_HTTP_PORT = '7299';
-export const SERVER_IIS_PORT = '33367';
+// Vite provides environment variables through import.meta.env
+// For local development, these might be undefined if not set in .env files or via CLI
+// Fallback to localhost if not provided, suitable for local docker-compose or direct `npm run dev`
 
-// Client ports
-export const CLIENT_PORT = '53392';
+const VITE_SERVER_IP = import.meta.env.VITE_SERVER_IP || "localhost";
+const VITE_SERVER_HTTP_PORT = import.meta.env.VITE_SERVER_HTTP_PORT || 8080;
 
-// Protocol configuration
-export const HTTP_PROTOCOL = 'http';
-export const HTTPS_PROTOCOL = 'https';
-export const WS_PROTOCOL = 'ws';
-export const WSS_PROTOCOL = 'wss';
+export const SERVER_IP = VITE_SERVER_IP;
+export const SERVER_HTTP_PORT = parseInt(VITE_SERVER_HTTP_PORT, 10);
+export const CLIENT_PORT = 5173; // Default Vite dev port
 
-// Constructed URLs
-export const SERVER_HTTP_URL = `${HTTP_PROTOCOL}://${SERVER_IP}:${SERVER_HTTP_PORT}`;
-export const SERVER_IIS_URL = `${HTTP_PROTOCOL}://${SERVER_IP}:${SERVER_IIS_PORT}`;
-export const CLIENT_URL = `${HTTP_PROTOCOL}://${SERVER_IP}:${CLIENT_PORT}`;
+export const SERVER_HTTP_URL = `http://${SERVER_IP}:${SERVER_HTTP_PORT}`;
 
-// WebSocket URLs
-export const WS_URL = `${WS_PROTOCOL}://${SERVER_IP}:${SERVER_HTTP_PORT}`;
-export const WSS_URL = `${WSS_PROTOCOL}://${SERVER_IP}:${SERVER_HTTP_PORT}`; 
+console.log("[config.js] Default (local development) configuration loaded.");
+console.log(`[config.js] SERVER_IP: ${SERVER_IP}`);
+console.log(`[config.js] SERVER_HTTP_PORT: ${SERVER_HTTP_PORT}`);
+console.log(`[config.js] Attempting to connect to backend at: ${SERVER_HTTP_URL}`);

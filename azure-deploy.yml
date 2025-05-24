@@ -1,11 +1,34 @@
+# Azure Container Instances (ACI) deployment configuration
+# Simple deployment - mirrors your docker-compose.yml setup
+
 apiVersion: 2019-12-01
 location: germanywest
-name: vs-frontend-backend
+name: vs-frontend-backend-aci
+type: Microsoft.ContainerInstance/containerGroups
 properties:
   containers:
+  - name: backend
+    properties:
+      image: vsfrontendbackendacr.azurecr.io/backend:latest
+      resources:
+        requests:
+          cpu: 1.0
+          memoryInGB: 2.0
+      ports:
+      - port: 8080
+      environmentVariables:
+      - name: ASPNETCORE_ENVIRONMENT
+        value: "Production"
+      - name: AZURE_DEPLOYMENT
+        value: "true"
+      - name: ConnectionStrings__DefaultConnection
+        value: "Server=vsfrontendbackend-sql.database.windows.net;Database=VSFrontendBackend;User Id=sa;Password=SaPasswordPlease!;TrustServerCertificate=True;"
+      - name: ASPNETCORE_URLS
+        value: "http://+:8080"
+
   - name: frontend
     properties:
-      image: yourregistry.azurecr.io/vsfrontendbackend/frontend:latest
+      image: vsfrontendbackendacr.azurecr.io/frontend:latest
       resources:
         requests:
           cpu: 1.0
@@ -13,31 +36,16 @@ properties:
       ports:
       - port: 80
       environmentVariables:
+      - name: REACT_APP_API_URL
+        value: "http://vs-backend-{random}.germanywest.azurecontainer.io:8080"
+      - name: VITE_API_URL
+        value: "http://vs-backend-{random}.germanywest.azurecontainer.io:8080"
       - name: SERVER_IP
-        value: "backend"
+        value: "vs-backend-{random}.germanywest.azurecontainer.io"
       - name: SERVER_HTTP_PORT
         value: "8080"
 
-  - name: backend
-    properties:
-      image: yourregistry.azurecr.io/vsfrontendbackend/backend:latest
-      resources:
-        requests:
-          cpu: 1.0
-          memoryInGB: 1.5
-      ports:
-      - port: 8080
-      environmentVariables:
-      - name: ASPNETCORE_ENVIRONMENT
-        value: "Production"
-      - name: SERVER_IP
-        value: "backend"
-      - name: SERVER_HTTP_PORT
-        value: "8080"
-      - name: CLIENT_PORT
-        value: "80"
-
-  osType: Windows
+  osType: Linux
   ipAddress:
     type: Public
     ports:
@@ -45,3 +53,10 @@ properties:
       port: 80
     - protocol: tcp
       port: 8080
+
+# Azure SQL Database Configuration (same as before)
+database:
+  serverName: vsfrontendbackend-sql
+  databaseName: VSFrontendBackend
+  adminUser: sa
+  password: SaPasswordPlease!
