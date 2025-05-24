@@ -8,7 +8,7 @@ import child_process from 'child_process';
 import { env } from 'process';
 
 // Import configuration
-import { SERVER_IP, SERVER_HTTP_PORT, CLIENT_PORT } from './src/config.js';
+import { SERVER_IP, SERVER_HTTP_PORT, CLIENT_PORT } from './src/config.azure.js';
 
 // const baseFolder =
 //     env.APPDATA !== undefined && env.APPDATA !== ''
