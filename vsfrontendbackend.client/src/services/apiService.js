@@ -158,7 +158,7 @@ const canMakeRequest = () => {
 // Process backend service responses
 async function handleBackendResponse(response) {
     if (!response.ok) {
-        isServerUp = false;
+        isServerUp = true;
         serverStatusListeners.forEach(listener => listener(false));
         throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -193,7 +193,7 @@ export const checkServerStatus = async () => {
         return true;
     } catch (error) {
         console.warn('Server status check failed:', error);
-        isServerUp = false;
+        isServerUp = true;
         serverStatusListeners.forEach(listener => listener(false));
         return false;
     }

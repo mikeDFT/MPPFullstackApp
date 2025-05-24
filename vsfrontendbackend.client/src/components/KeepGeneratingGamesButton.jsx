@@ -1,21 +1,51 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import websocketService from '../services/websocketService';
+import React, { useState, useEffect, useRef } from 'react';
 import { useData } from '../context/DataContext';
+import { generateGameData } from '../utils/GameDataGenerator';
+import { apiService } from '../services/apiService';
 
 export function KeepGeneratingGamesButton() {
 	const [isGenerating, setIsGenerating] = useState(false);
-	const [isConnected, setIsConnected] = useState(false);
-	const [retryCount, setRetryCount] = useState(0);
-	const { actions } = useData().games;
+	const generationTimerRef = useRef(null);
+	const { data, actions } = useData().games;
 	const hasInitialized = useRef(false);
 
-	// Function to handle reconnection attempts
-	const attemptReconnect = useCallback(() => {
-		console.log(`Reconnection attempt ${retryCount + 1}`);
-		setRetryCount(prev => prev + 1);
-		websocketService.connect();
-	}, [retryCount]);
+	// Set up a function to generate and add a game
+	const generateAndAddGame = async () => {
+		try {
+			// Generate a new game using the local generator
+			const newGame = generateGameData(data || []);
+			
+			// Transform to match the expected API format
+			const gameForApi = {
+				Id: newGame.ID,
+				Name: newGame.Name,
+				Price: newGame.Price,
+				Description: newGame.Description,
+				IconID: newGame.IconID,
+				Rating: newGame.Rating,
+				Genres: newGame.Genres,
+				Platforms: newGame.Platforms,
+				CompanyID: Math.floor(Math.random() * 2) + 1, // Random company ID between 1-2
+				CompanyName: Math.floor(Math.random() * 2) + 1 === 1 ? "Adventure Studios" : "Cosmic Games"
+			};
 
+			console.log('Generated new game:', gameForApi.Name);
+			
+			// Add to backend via API
+			await apiService.modifyGame(gameForApi);
+			console.log('Game added to backend:', gameForApi.Name);
+			
+			// Also update the local context
+			if (actions && actions.modifyGame) {
+				actions.modifyGame(gameForApi);
+				console.log('Game added to context:', gameForApi.Name);
+			}
+		} catch (error) {
+			console.error('Error generating or adding game:', error);
+		}
+	};
+
+	// Set up the generation interval
 	useEffect(() => {
 		console.log('KeepGeneratingGamesButton mounted');
 		
@@ -27,129 +57,67 @@ export function KeepGeneratingGamesButton() {
 		
 		hasInitialized.current = true;
 		
-		// Register message handlers
-		websocketService.registerMessageHandler('newGame', (message) => {
-			console.log('New game received:', message);
-			// Parse and add the game to the context
-			try {
-				if (message.data) {
-					var newGame = JSON.parse(message.data);
-					newGame = { // converting to the expected format
-						Id: newGame.id,
-						Name: newGame.name,
-						Price: newGame.price,
-						Description: newGame.description,
-						IconID: newGame.iconID,
-						Rating: newGame.rating,
-						Genres: newGame.genres,
-						Platforms: newGame.platforms,
-						CompanyID: newGame.companyID,
-						CompanyName: newGame.companyName
-					  };
-					if (newGame && actions && actions.modifyGame) {
-						actions.modifyGame(newGame);
-						console.log('Game added to context:', newGame.Name);
-					}
-				}
-			} catch (error) {
-				console.error('Error processing new game:', error);
-			}
-		});
-
-		websocketService.registerMessageHandler('started', (message) => {
-			console.log('Generation started:', message);
-			setIsGenerating(true);
-		});
-
-		websocketService.registerMessageHandler('stopped', (message) => {
-			console.log('Generation stopped:', message);
-			setIsGenerating(false);
-		});
-
-		websocketService.registerMessageHandler('pong', (message) => {
-			console.log('Received pong from server:', message);
-			// Server is alive, connection is working
-		});
-
-		// Register connection state change handler
-		websocketService.onConnectionChange((connected) => {
-			console.log('Connection state changed:', connected);
-			setIsConnected(connected);
-			
-			// Reset retry count when connected
-			if (connected) {
-				setRetryCount(0);
-			}
-		});
-
-		// Register generation state change handler
-		websocketService.onGenerationStateChange((generating) => {
-			console.log('Generation state changed:', generating);
-			setIsGenerating(generating);
-		});
-
-		// Connect to WebSocket if not already connected or connecting
-		// Using a short timeout to avoid multiple connections in development mode
-		const connectTimer = setTimeout(() => {
-			console.log('Initiating WebSocket connection after delay...');
-			websocketService.connect();
-		}, 300);
-		
+		// Clean up function to clear any timers
 		return () => {
-			// Only clear the initialization timer, don't disconnect on unmount
-			clearTimeout(connectTimer);
+			if (generationTimerRef.current) {
+				clearInterval(generationTimerRef.current);
+				generationTimerRef.current = null;
+			}
 		};
 	}, []); // Empty dependency array to run only once
 
-	// Add an effect for retry logic - separate from main effect
+	// Handle changes to isGenerating state
 	useEffect(() => {
-		let retryTimeout;
-		
-		// If not connected and we have retry attempts left, try again after delay
-		if (!isConnected && retryCount < 5) {
-			retryTimeout = setTimeout(() => {
-				attemptReconnect();
-			}, 3000 + (retryCount * 1000)); // Increase delay with each retry
+		if (isGenerating) {
+			// Start generating games at regular intervals
+			console.log('Starting game generation...');
+			
+			// Generate one immediately
+			generateAndAddGame();
+			
+			// Set up interval for subsequent generations (every 3 seconds)
+			generationTimerRef.current = setInterval(() => {
+				generateAndAddGame();
+			}, 3000);
+		} else {
+			// Stop generating games
+			if (generationTimerRef.current) {
+				console.log('Stopping game generation...');
+				clearInterval(generationTimerRef.current);
+				generationTimerRef.current = null;
+			}
 		}
 		
+		// Clean up on component unmount or when isGenerating changes
 		return () => {
-			if (retryTimeout) {
-				clearTimeout(retryTimeout);
+			if (generationTimerRef.current) {
+				clearInterval(generationTimerRef.current);
+				generationTimerRef.current = null;
 			}
 		};
-	}, [isConnected, retryCount, attemptReconnect]);
+	}, [isGenerating]);
 
 	const handleClick = () => {
 		console.log('Button clicked, toggling generation...');
-		if (isConnected) {
-			websocketService.toggleGeneration();
-		} else {
-			// Try to reconnect if disconnected
-			websocketService.connect();
-		}
+		setIsGenerating(!isGenerating);
 	};
 
 	return (
 		<button
 			onClick={handleClick}
-			disabled={!isConnected && retryCount >= 5}
 			style={{
 				width: "100%",
 				padding: '10px 20px',
 				fontSize: '16px',
-				cursor: isConnected ? 'pointer' : 'not-allowed',
-				backgroundColor: isConnected 
-					? (isGenerating ? '#ff4444' : '#4CAF50') 
-					: (retryCount >= 5 ? '#999999' : '#cccccc'),
+				cursor: 'pointer',
+				backgroundColor: isGenerating ? '#ff4444' : '#4CAF50',
 				color: 'white',
 				border: 'none',
 				borderRadius: '4px',
 				transition: 'background-color 0.3s'
 			}}
 		>
-			{!isConnected 
-				? (retryCount >= 5 ? 'Connection Failed' : `Connecting... (${retryCount})`) 
-				: (isGenerating ? 'Stop Generating' : 'Start Generating')}
+			{isGenerating ? 'Stop Generating' : 'Start Generating'}
 		</button>
 	);
 };

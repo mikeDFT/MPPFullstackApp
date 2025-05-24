@@ -15,8 +15,8 @@ function MainPage() {
                 <FilterSortingBar />
                 <div style={{padding: "1em"}}></div>
                 <RatingChart />
-                {/* <div style={{padding: "1em"}}></div> */}
-                {/* <KeepGeneratingGamesButton /> */}
+                <div style={{padding: "1em"}}></div>
+                <KeepGeneratingGamesButton />
                 <div style={{padding: "1em"}}></div>
                 <FileButtons />
             </div>
