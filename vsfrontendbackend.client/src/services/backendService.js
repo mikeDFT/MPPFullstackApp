@@ -326,6 +326,15 @@ let dataStore = {
 
 // Initialize with some default data if empty
 const initializeDataStore = () => {
+    const currentVersion = '1.0.1'; // Change this when deploying new version
+    const storedVersion = localStorage.getItem('appVersion');
+
+    if (storedVersion !== currentVersion) {
+        localStorage.clear(); // Clear only when version changes
+        localStorage.setItem('appVersion', currentVersion);
+        console.log('localStorage cleared due to version change');
+    }
+
     // Check if we have stored data in localStorage
     var savedGames = localStorage.getItem('gamesInfo');
     var savedCompanies = localStorage.getItem('companiesInfo');
@@ -633,17 +642,6 @@ const initializeDataStore = () => {
 
 // Call initialization
 initializeDataStore();
-
-useEffect(() => {
-  const currentVersion = '1.0.1'; // Change this when deploying new version
-  const storedVersion = localStorage.getItem('appVersion');
-
-  if (storedVersion !== currentVersion) {
-    localStorage.clear(); // Clear only when version changes
-    localStorage.setItem('appVersion', currentVersion);
-    console.log('localStorage cleared due to version change');
-  }
-}, []);
 
 // Utility functions
 const filterGames = (games, params) => {
