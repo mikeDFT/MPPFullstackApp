@@ -14,7 +14,8 @@ class OfflineWebSocketService {
         this.connectionId = null;
         this.pingInterval = null;
         
-        // Connection configuration        this.connectionDelay = 100; // ms
+        // Connection configuration
+        this.connectionDelay = 100; // ms
         this.messageDelay = 50; // ms
         this.generationInterval = 2000; // Generate a game every 2 seconds
     }
@@ -315,7 +316,7 @@ class OfflineWebSocketService {
             try {
                 callback(this.isGenerating);
             } catch (error) {
-                console.error('Simulated WebSocket: Error in generation state change callback:', error);
+                console.error('WebSocket: Error in generation state change callback:', error);
             }
         });
     }
@@ -332,12 +333,12 @@ class OfflineWebSocketService {
     // Simulate connection issues (for testing)
     simulateConnectionLoss() {
         if (this.isConnected) {
-            console.log('Simulated WebSocket: Simulating connection loss...');
+            console.log('WebSocket: Simulating connection loss...');
             this.disconnect();
             
             // Auto-reconnect after a delay (simulate reconnection logic)
             setTimeout(() => {
-                console.log('Simulated WebSocket: Auto-reconnecting...');
+                console.log('WebSocket: Auto-reconnecting...');
                 this.connect();
             }, 3000);
         }
@@ -359,4 +360,5 @@ class OfflineWebSocketService {
 // Create singleton instance
 const offlineWebSocketService = new OfflineWebSocketService();
 
+export default OfflineWebSocketService;
 export { offlineWebSocketService };

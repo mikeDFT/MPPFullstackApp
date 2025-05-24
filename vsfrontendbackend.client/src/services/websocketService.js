@@ -4,16 +4,15 @@ let instanceCounter = 0;
 // Import configuration
 import { SERVER_IP, SERVER_HTTP_PORT } from '../config';
 import simulationConfig from '../config/simulationConfig';
-import SimulatedWebSocketService from './simulatedWebSocketService';
+import OfflineWebSocketService from './simulatedWebSocketService';
 
 // WebSocket service to handle all WebSocket connections and logic
 class WebSocketService {
 	constructor() {
 		this.instanceId = ++instanceCounter;
 		console.log(`Creating WebSocketService instance #${this.instanceId}`);
-		
-		// Initialize simulated service
-		this.simulatedService = new SimulatedWebSocketService();
+				// Initialize offline service
+		this.offlineService = new OfflineWebSocketService();
 		this.useSimulation = false;
 		
 		this.ws = null;
@@ -37,10 +36,9 @@ class WebSocketService {
 			if (isSimulation && this.isConnected) {
 				// Switch to simulation mode
 				this.closeConnection();
-				this.connectSimulated();
-			} else if (!isSimulation && this.simulatedService.isConnected()) {
+				this.connectSimulated();			} else if (!isSimulation && this.offlineService.isConnected()) {
 				// Switch to real mode
-				this.simulatedService.disconnect();
+				this.offlineService.disconnect();
 				this.connect();
 			}
 		});
