@@ -1,4 +1,4 @@
-@VSFrontendBackend.Server_HostAddress = https://vsfrontendbackend-backanddb-ekehbedufmaybzas.germanywestcentral-01.azurewebsites.net // {{$processEnv SERVER_HTTP_URL}}
+@VSFrontendBackend.Server_HostAddress = https://vsfrontendbackend-backanddb-ekehbedufmaybzas.germanywestcentral-01.azurewebsites.net/ // {{$processEnv SERVER_HTTP_URL}}
 
 
 GET {{VSFrontendBackend.Server_HostAddress}}/weatherforecast/
