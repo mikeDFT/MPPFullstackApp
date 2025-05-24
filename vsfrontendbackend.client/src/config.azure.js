@@ -6,8 +6,8 @@
 // (which they currently are not for these specific vars),
 // they will take on the defaults from the Dockerfile ARGs (e.g., localhost, 8080)
 // or be undefined if no defaults.
-const VITE_SERVER_IP_BUILD_TIME = import.meta.env.VITE_SERVER_IP;
-const VITE_SERVER_HTTP_PORT_BUILD_TIME = import.meta.env.VITE_SERVER_HTTP_PORT;
+const VITE_SERVER_IP_BUILD_TIME = (import.meta.env && import.meta.env.VITE_SERVER_IP) || "localhost";
+const VITE_SERVER_HTTP_PORT_BUILD_TIME = (import.meta.env && import.meta.env.VITE_SERVER_HTTP_PORT) || 80;
 
 // SERVER_IP and SERVER_HTTP_PORT are primarily for Nginx runtime configuration.
 // The client-side code should make relative API calls.
