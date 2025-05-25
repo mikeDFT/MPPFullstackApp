@@ -13,7 +13,6 @@ export const CLIENT_PORT = 5173; // Default Vite dev port
 
 export const SERVER_HTTP_URL = `https://${SERVER_IP}`;
 
-console.log("[config.js] Default (local development) configuration loaded.");
 console.log(`[config.js] SERVER_IP: ${SERVER_IP}`);
 console.log(`[config.js] SERVER_HTTP_PORT: ${SERVER_HTTP_PORT}`);
 console.log(`[config.js] Attempting to connect to backend at: ${SERVER_HTTP_URL}`);
